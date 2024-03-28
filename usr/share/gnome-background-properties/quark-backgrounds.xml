@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">
+<wallpapers>
+    <wallpaper>
+        <name>Lavender</name>
+        <filename>/usr/share/backgrounds/quark/daiga-ellaby-ClWvcrkBhMY-unsplash.jpg</filename>
+        <options>zoom</options>
+        <shade_type>solid</shade_type>
+        <pcolor>#000000</pcolor>
+        <scolor>#ffffff</scolor>
+    </wallpaper>
+    <wallpaper>
+        <name>Moss</name>
+        <filename>/usr/share/backgrounds/quark/liam-briese-j3qTdwNKarQ-unsplash.jpg</filename>
+        <options>zoom</options>
+        <shade_type>solid</shade_type>
+        <pcolor>#000000</pcolor>
+        <scolor>#ffffff</scolor>
+    </wallpaper>
+    <wallpaper>
+        <name>Gardenia Leaves</name>
+        <filename>/usr/share/backgrounds/quark/micky-white-Ur0e7M7xUc0-unsplash.jpg</filename>
+        <options>zoom</options>
+        <shade_type>solid</shade_type>
+        <pcolor>#000000</pcolor>
+        <scolor>#ffffff</scolor>
+    </wallpaper>
+    <wallpaper>
+        <name>Tree Bark</name>
+        <filename>/usr/share/backgrounds/quark/omid-armin-KAOO3HHsrwU-unsplash.jpg</filename>
+        <options>zoom</options>
+        <shade_type>solid</shade_type>
+        <pcolor>#000000</pcolor>
+        <scolor>#ffffff</scolor>
+    </wallpaper>
+    <wallpaper>
+        <name>Pattern</name>
+        <filename>/usr/share/backgrounds/quark/peter-olexa-MrLzfoGWr3M-unsplash.jpg</filename>
+        <options>zoom</options>
+        <shade_type>solid</shade_type>
+        <pcolor>#000000</pcolor>
+        <scolor>#ffffff</scolor>
+    </wallpaper>
+    <wallpaper>
+        <name>Branches</name>
+        <filename>/usr/share/backgrounds/quark/vitolda-klein-gFRXVl9_osc-unsplash.jpg</filename>
+        <options>zoom</options>
+        <shade_type>solid</shade_type>
+        <pcolor>#000000</pcolor>
+        <scolor>#ffffff</scolor>
+    </wallpaper>
+</wallpapers>

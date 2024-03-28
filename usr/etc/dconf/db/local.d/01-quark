@@ -1,0 +1,116 @@
+[org/gnome/shell] 
+favorite-apps = ['org.gnome.Ptyxis.desktop', 'org.mozilla.firefox.desktop', 'org.gnome.Nautilus.desktop']
+enabled-extensions = ['just-perfection-desktop@just-perfection', 'dash-to-dock@micxgx.gmail.com', 's76-scheduler@mattjakeman.com']
+
+[org/gnome/desktop/app-folders]
+folder-children=['Containers', 'Utilities', 'Settings']
+
+[org/gnome/desktop/app-folders/folders/Utilities]
+apps=['org.gnome.DiskUtility.desktop', 'gnome-system-monitor.desktop', 'io.github.flattool.Warehouse', 'org.gnome.Connections.desktop', 'org.gnome.Loupe.desktop']
+categories=['X-GNOME-Utilities']
+name='X-GNOME-Utilities.directory'
+translate=true
+
+[org/gnome/desktop/app-folders/folders/Settings]
+apps=['ca.desrt.dconf-editor.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'com.github.tchx84.Flatseal.desktop', 'org.gnome.Settings.desktop', 'org.gnome.tweaks.desktop']
+categories=['Settings']
+name='Settings'
+translate=true
+
+[org/gnome/desktop/app-folders/folders/Containers]
+apps=['com.github.marhkb.Pods.desktop']
+categories=['Distrobox']
+name='Containers'
+translate=false
+
+[org/gnome/desktop/background]
+picture-uri='file:///usr/share/backgrounds/quark/daiga-ellaby-ClWvcrkBhMY-unsplash.jpg'
+picture-uri-dark='file:///usr/share/backgrounds/quark/daiga-ellaby-ClWvcrkBhMY-unsplash.jpg'
+picture-options='stretched'
+primary-color='000000'
+secondary-color='FFFFFF'
+
+[org/gnome/desktop/interface]
+font-name="Inter 11"
+document-font-name="Inter 11"
+monospace-font-name="CaskaydiaCove Nerd Font Regular 11"
+clock-show-weekday=true
+font-antialiasing="rgba"
+clock-format="12h"
+gtk-theme="adw-gtk3-dark"
+
+[org/gnome/desktop/sound]
+allow-volume-above-100-percent=true
+theme-name="freedesktop"
+
+[org/gnome/desktop/wm/preferences]
+titlebar-font="Inter 11"
+
+[org/gnome/desktop/peripherals/touchpad]
+tap-to-click=true
+
+[org/gnome/desktop/peripherals/mouse]
+accel-profile="flat"
+
+[org/gnome/shell/extensions/dash-to-dock]
+transparency-mode='FIXED'
+animation-time=0.15
+background-opacity=0.8
+dash-max-icon-size=64
+custom-background-color=true
+background-color='rgb(40,40,40)'
+hot-keys=false
+scroll-action='cycle-windows'
+show-trash=false
+
+[org/gnome/shell/extensions/just-perfection]
+world-clock=false
+
+[org/gnome/mutter]
+experimental-features=['variable-refresh-rate']
+
+[org/gtk/settings/file-chooser]
+sort-directories-first=true
+
+[org/gtk/gtk4/settings/file-chooser]
+sort-directories-first=true
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0]
+binding='<Super>t'
+command='xdg-terminal-exec'
+name='Launch Terminal'
+
+[org/gnome/settings-daemon/plugins/media-keys]
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/']
+home=['<Super>e']
+
+[org/gnome/desktop/wm/keybindings]
+close=['<Super>q']
+switch-to-workspace-left=['<Super>Left']
+switch-to-workspace-right=['<Super>Right']
+move-to-workspace-left=['<Shift><Super>Left']
+move-to-workspace-right=['<Shift><Super>Right']
+move-to-monitor-left=['']
+move-to-monitor-right=['']
+
+[org/gnome/mutter/keybindings]
+toggle-tiled-left=['<Control><Super>Left']
+toggle-tiled-right=['<Control><Super>Right']
+
+[org/gnome/settings-daemon/plugins/power]
+power-button-action='interactive'
+
+[org/gnome/software]
+allow-updates=false
+download-updates=false
+download-updates-notify=false
+
+[com/github/stunkymonkey/nautilus-open-any-terminal]
+terminal='ptyxis'
+keybindings=''
+new-tab=false
+flatpak='off'
+
+[org/gnome/Ptyxis]
+restore-session=false
+restore-window-size=false
