@@ -41,7 +41,11 @@ RUN wget https://copr.fedorainfracloud.org/coprs/bieszczaders/kernel-cachyos/rep
         kernel-modules-core \
         kernel-modules-extra \
     --install \
-        kernel-cachyos
+        kernel-cachyos \
+    --install \
+        kernel-cachyos-headers \
+    --install \
+        kernel-cachyos-devel
 
 # Update packages that commonly cause build issues
 # RUN rpm-ostree override replace \
@@ -138,7 +142,19 @@ RUN rpm-ostree override replace \
         || true && \
     rpm-ostree override remove \
         glibc32 \
-        || true
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates-testing \
+        pipewire \
+        pipewire-alsa \
+        pipewire-gstreamer \
+        pipewire-jack-audio-connection-kit \
+        pipewire-jack-audio-connection-kit-libs \
+        pipewire-libs \
+        pipewire-pulseaudio \
+        pipewire-utils \
+        || true 
 
 # Removals
 RUN rpm-ostree override remove \
@@ -176,6 +192,7 @@ RUN rpm-ostree install \
         rsms-inter-fonts \
         jetbrains-mono-fonts \
         mesa-libGLU \
+        glibc.i686 \
         vulkan-tools && \
     pip install --prefix=/usr topgrade && \
     rpm-ostree install \
@@ -193,12 +210,22 @@ RUN rpm-ostree install \
     rm -rf /etc/yum.repos.d/terra.repo
 
 # Gnome stuff
-RUN rpm-ostree install \
+RUN rpm-ostree override replace \
+    --experimental \
+    --from repo=copr:copr.fedorainfracloud.org:ublue-os:staging \
+        gtk4 \
+        vte291 \
+        vte-profile \
+        libadwaita && \
+    rpm-ostree install \
+        ptyxis \
+        nautilus-open-any-terminal \
         gnome-shell-extension-just-perfection \
         gnome-shell-extension-system76-scheduler && \
     rpm-ostree override remove \
         gnome-software-rpm-ostree \
         gnome-tour \
+        gnome-extensions-app \
         gnome-classic-session \
         gnome-classic-session-xsession \
         gnome-terminal-nautilus \
@@ -210,32 +237,15 @@ RUN rpm-ostree install \
     # TODO set up copr for patched and additional packages
     rpm-ostree override replace \
         /tmp/rpms/override/*.rpm
-    # rpm-ostree install \
-        # /tmp/rpms/install/*.rpm
 
 # Gaming-specific changes
 RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
-    rpm-ostree install \
-        glibc.i686 \
-        || true && \
     rpm-ostree override replace \
     --experimental \
     --from repo=updates-testing \
-        audit-libs \
-        glibc \
-        glibc-common \
-        glibc-gconv-extra \
-        glibc-all-langpacks \
-    --install \
-        glibc.i686 \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates-testing \
-        audit-libs \
+        xz-libs \
         || true && \
     rpm-ostree install \
-        /tmp/rpms/install/*.rpm \
         at-spi2-core.i686 \
         atk.i686 \
         vulkan-loader.i686 \
@@ -260,13 +270,12 @@ RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
         libdbusmenu-gtk3.i686 \
         libatomic.i686 \
         pipewire-alsa.i686 \
+        protontricks \
         clinfo \
         gamescope \
         vkBasalt \
         mangohud \
-        steam \
-        mesa-vulkan-drivers.i686 \
-        mesa-va-drivers-freeworld.i686 && \
+        steam && \
     rpm-ostree override remove \
         gamemode && \
     wget \
@@ -276,7 +285,6 @@ RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
     rpm-ostree install \
         /tmp/rpms/lact.rpm && \
     systemctl enable lactd && \
-    sed -i 's@/usr/bin/steam@/usr/bin/xtest-steam@g' /usr/share/applications/steam.desktop && \
     systemctl enable gamescope-workaround.service \
     ; fi
 
@@ -350,7 +358,6 @@ RUN rpm-ostree install \
         rm -f /var/lib/unbound/root.key
 
 RUN rm -f /etc/yum.repos.d/vscode.repo && \
-    rm -f /usr/bin/xtest-steam && \
     rm -f /etc/yum.repos.d/_copr_* && \
     rm -f get_helm.sh && \
     rm -rf aws && \
