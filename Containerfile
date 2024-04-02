@@ -183,7 +183,6 @@ RUN rpm-ostree install \
         zsh \
         patch \
         python3-pip \
-        libadwaita \
         duperemove \
         xrandr \
         system76-scheduler \
@@ -213,10 +212,8 @@ RUN rpm-ostree install \
 RUN rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:ublue-os:staging \
-        gtk4 \
         vte291 \
-        vte-profile \
-        libadwaita && \
+        vte-profile && \
     rpm-ostree install \
         ptyxis \
         nautilus-open-any-terminal \
