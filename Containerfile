@@ -22,7 +22,8 @@ COPY rpms /tmp/rpms
 COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
 # Add custom repos
-RUN wget https://copr.fedorainfracloud.org/coprs/ublue-os/staging/repo/fedora-$(rpm -E %fedora)/ublue-os-staging-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_ublue-os-staging.repo && \
+RUN mkdir -p /var/lib/alternatives && \
+    wget https://copr.fedorainfracloud.org/coprs/ublue-os/staging/repo/fedora-$(rpm -E %fedora)/ublue-os-staging-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_ublue-os-staging.repo && \
     wget https://copr.fedorainfracloud.org/coprs/kylegospo/system76-scheduler/repo/fedora-$(rpm -E %fedora)/kylegospo-system76-scheduler-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_kylegospo-system76-scheduler.repo && \
     wget https://copr.fedorainfracloud.org/coprs/sentry/switcheroo-control_discrete/repo/fedora-$(rpm -E %fedora)/sentry-switcheroo-control_discrete-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_sentry-switcheroo-control_discrete.repo
 
@@ -384,10 +385,12 @@ RUN /tmp/image-info.sh && \
     systemctl --global enable systemd-tmpfiles-setup.service && \
     echo "import \"/usr/share/ublue-os/just/80-quark.just\"" >> /usr/share/ublue-os/justfile && \
     sed -i '/^PRETTY_NAME/s/Silverblue/Quark/' /usr/lib/os-release && \
+    mv /var/lib/alternatives /staged-alternatives && \
     rm -rf /tmp/* /var/* && \
-    mkdir -p /var/tmp && \
-    chmod -R 1777 /var/tmp && \
-    ostree container commit
+    ostree container commit && \
+    mkdir -p /var/lib && mv /staged-alternatives /var/lib/alternatives && \
+    mkdir -p /tmp /var/tmp && \
+    chmod -R 1777 /tmp /var/tmp
 
 
 # cloud development build
