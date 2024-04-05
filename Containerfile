@@ -1,10 +1,10 @@
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
 ARG IMAGE_FLAVOR="${IMAGE_FLAVOR:-main}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH}"
-ARG SOURCE_IMAGE="${SOURCE_IMAGE:-$BASE_IMAGE_NAME-$IMAGE_FLAVOR}"
-# ARG SOURCE_IMAGE="${SOURCE_IMAGE:-$BASE_IMAGE_NAME}"
-# ARG BASE_IMAGE="quay.io/fedora-ostree-desktops/${SOURCE_IMAGE}"
-ARG BASE_IMAGE="ghcr.io/ublue-os/${SOURCE_IMAGE}"
+# ARG SOURCE_IMAGE="${SOURCE_IMAGE:-$BASE_IMAGE_NAME-$IMAGE_FLAVOR}"
+ARG SOURCE_IMAGE="${SOURCE_IMAGE:-$BASE_IMAGE_NAME}"
+ARG BASE_IMAGE="quay.io/fedora-ostree-desktops/${SOURCE_IMAGE}"
+# ARG BASE_IMAGE="ghcr.io/ublue-os/${SOURCE_IMAGE}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS quark
@@ -19,42 +19,25 @@ COPY etc /etc
 COPY usr /usr
 COPY tmp /tmp
 COPY rpms /tmp/rpms
+COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
 # Add custom repos
 RUN wget https://copr.fedorainfracloud.org/coprs/ublue-os/staging/repo/fedora-$(rpm -E %fedora)/ublue-os-staging-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_ublue-os-staging.repo && \
     wget https://copr.fedorainfracloud.org/coprs/kylegospo/system76-scheduler/repo/fedora-$(rpm -E %fedora)/kylegospo-system76-scheduler-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_kylegospo-system76-scheduler.repo && \
     wget https://copr.fedorainfracloud.org/coprs/sentry/switcheroo-control_discrete/repo/fedora-$(rpm -E %fedora)/sentry-switcheroo-control_discrete-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_sentry-switcheroo-control_discrete.repo
 
-
-
 # RUN rpm-ostree install \
 #         https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
 #         https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
 
-# Install CachyOS kernel
-RUN wget https://copr.fedorainfracloud.org/coprs/bieszczaders/kernel-cachyos/repo/fedora-$(rpm -E %fedora)/bieszczaders-kernel-cachyos-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_cachyos_kernel.repo && \
-    rpm-ostree cliwrap install-to-root / && \
-    rpm-ostree override remove \
-        kernel \
-        kernel-core \
-        kernel-modules \
-        kernel-modules-core \
-        kernel-modules-extra \
-    --install \
-        kernel-cachyos \
-    --install \
-        kernel-cachyos-headers \
-    --install \
-        kernel-cachyos-devel
+RUN wget -P /tmp/rpms/config \
+        https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
+        https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm && \
+    rm -f /tmp/rpms/config/ublue-os-update-services*.rpm && \
+    rpm-ostree install \
+        /tmp/rpms/config/*.rpm \
+        fedora-repos-archive
 
-# Update packages that commonly cause build issues
-# RUN rpm-ostree override replace \
-#     --experimental \
-#     --from repo=fedora \
-#         vim-data \
-#         vim-minimal
-
-# RUN rm -rf /etc/yum.repos.d/fedora-updates-testing.repo
 RUN rpm-ostree override replace \
     --experimental \
     --from repo=updates-testing \
@@ -154,10 +137,54 @@ RUN rpm-ostree override replace \
         pipewire-libs \
         pipewire-pulseaudio \
         pipewire-utils \
-        || true 
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates-testing \
+        xz-libs \
+        || true
+RUN rpm-ostree override replace \
+    --experimental \
+    --from repo=updates-testing \
+        gcc \
+        cpp \
+        libgomp \
+        libgcc \
+        glibc \
+        glibc-devel \
+        glibc-common \
+        glibc-gconv-extra \
+        glibc-all-langpacks \
+        || true
+
+# Install CachyOS kernel
+RUN wget https://copr.fedorainfracloud.org/coprs/bieszczaders/kernel-cachyos/repo/fedora-$(rpm -E %fedora)/bieszczaders-kernel-cachyos-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_cachyos_kernel.repo && \
+    rpm-ostree cliwrap install-to-root / && \
+    rpm-ostree override remove \
+        kernel \
+        kernel-core \
+        kernel-modules \
+        kernel-modules-core \
+        kernel-modules-extra \
+    --install \
+        kernel-cachyos \
+    --install \
+        kernel-cachyos-headers \
+    --install \
+        kernel-cachyos-devel
 
 # Removals
 RUN rpm-ostree override remove \
+        google-noto-sans-cjk-vf-fonts \
+        libavcodec-free \
+        libavfilter-free \
+        libavformat-free \
+        libavutil-free \
+        libpostproc-free \
+        libswresample-free \
+        libswscale-free \
+        mesa-va-drivers \
+        default-fonts-cjk-sans \
         firefox \
         firefox-langpacks && \
     rpm-ostree override remove \
@@ -166,33 +193,75 @@ RUN rpm-ostree override remove \
 
 # Additions
 RUN rpm-ostree install \
+        alsa-firmware \
+        android-udev-rules \
+        apr \
+        apr-util \
+        adw-gtk3-theme \
+        distrobox \
+        ffmpeg \
+        ffmpeg-libs \
+        ffmpegthumbnailer \
+        fzf \
+        google-noto-sans-balinese-fonts \
+        google-noto-sans-cjk-fonts \
+        google-noto-sans-javanese-fonts \
+        google-noto-sans-sundanese-fonts \
+        grub2-tools-extra \
+        heif-pixbuf-loader \
+        htop \
+        intel-media-driver \
+        just \
+        kernel-tools \
+        libheif-freeworld \
+        libheif-tools default-fonts-cjk-sans\
+        libratbag-ratbagd \
+        libva-intel-driver \
+        libva-utils \
+        lshw \
+        net-tools \
+        nvme-cli \
+        nvtop \
+        openrgb-udev-rules \
+        openssl \
+        pam-u2f \
+        pam_yubico \
+        pamu2fcfg \
+        pipewire-codec-aptx \
+        smartmontools \
+        solaar-udev \
+        symlinks \
+        tcpdump \
+        tmux \
+        traceroute \
+        vim \
+        wireguard-tools \
+        zstd \
         bootc \
-        zsh \
-        mesa-vdpau-drivers-freeworld \
-        zsh \
+        duperemove \
+        edid-decode \
+        glibc.i686 \
+        input-leap \
+        input-remapper \
+        jetbrains-mono-fonts \
+        jq \
+        mesa-libGLU \
+        patch \
+        powertop \
+        python3-pip \
+        rsms-inter-fonts \
+        setools \
+        system76-scheduler \
         tuned \
-        tuned-ppd \
-        tuned-utils \
         tuned-gtk \
+        tuned-ppd \
         tuned-profiles-atomic \
         tuned-profiles-cpu-partitioning \
-        powertop \
-        input-remapper \
-        jq \
-        edid-decode \
-        zsh \
-        patch \
-        python3-pip \
-        duperemove \
-        xrandr \
-        system76-scheduler \
+        tuned-utils \
         unrar \
-        setools \
-        rsms-inter-fonts \
-        jetbrains-mono-fonts \
-        mesa-libGLU \
-        glibc.i686 \
-        vulkan-tools && \
+        xrandr \
+        vulkan-tools \
+        zsh && \
     pip install --prefix=/usr topgrade && \
     rpm-ostree install \
         ublue-update && \
@@ -217,6 +286,8 @@ RUN rpm-ostree override replace \
     rpm-ostree install \
         ptyxis \
         nautilus-open-any-terminal \
+        gnome-epub-thumbnailer \
+        gnome-tweaks \
         gnome-shell-extension-just-perfection \
         gnome-shell-extension-system76-scheduler && \
     rpm-ostree override remove \
@@ -237,42 +308,37 @@ RUN rpm-ostree override replace \
 
 # Gaming-specific changes
 RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates-testing \
-        xz-libs \
-        || true && \
     rpm-ostree install \
+        NetworkManager-libnm.i686 \
+        alsa-lib.i686 \
         at-spi2-core.i686 \
         atk.i686 \
-        vulkan-loader.i686 \
-        alsa-lib.i686 \
+        clinfo \
         fontconfig.i686 \
+        gamescope \
         gtk2.i686 \
         libICE.i686 \
-        libnsl.i686 \
-        libxcrypt-compat.i686 \
-        libpng12.i686 \
+        libXScrnSaver.i686 \
         libXext.i686 \
         libXinerama.i686 \
         libXtst.i686 \
-        libXScrnSaver.i686 \
-        NetworkManager-libnm.i686 \
-        nss.i686 \
-        pulseaudio-libs.i686 \
+        libatomic.i686 \
         libcurl.i686 \
-        systemd-libs.i686 \
+        libdbusmenu-gtk3.i686 \
+        libnsl.i686 \
+        libpng12.i686 \
         libva.i686 \
         libvdpau.i686 \
-        libdbusmenu-gtk3.i686 \
-        libatomic.i686 \
+        libxcrypt-compat.i686 \
+        mangohud \
+        nss.i686 \
         pipewire-alsa.i686 \
         protontricks \
-        clinfo \
-        gamescope \
+        pulseaudio-libs.i686 \
+        steam \
+        systemd-libs.i686 \
         vkBasalt \
-        mangohud \
-        steam && \
+        vulkan-loader.i686 && \
     rpm-ostree override remove \
         gamemode && \
     wget \
