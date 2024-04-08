@@ -260,8 +260,9 @@ RUN rpm-ostree install \
         tuned-profiles-cpu-partitioning \
         tuned-utils \
         unrar \
-        xrandr \
         vulkan-tools \
+        wl-clipboard \
+        xrandr \
         zsh && \
     pip install --prefix=/usr topgrade && \
     rpm-ostree install \
