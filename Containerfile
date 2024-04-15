@@ -242,7 +242,6 @@ RUN rpm-ostree install \
         duperemove \
         edid-decode \
         glibc.i686 \
-        input-leap \
         input-remapper \
         jetbrains-mono-fonts \
         jq \

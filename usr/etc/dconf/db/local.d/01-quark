@@ -6,7 +6,7 @@ enabled-extensions = ['just-perfection-desktop@just-perfection', 'dash-to-dock@m
 folder-children=['Containers', 'Utilities', 'Settings']
 
 [org/gnome/desktop/app-folders/folders/Utilities]
-apps=['org.gnome.DiskUtility.desktop', 'gnome-system-monitor.desktop', 'io.github.flattool.Warehouse', 'org.gnome.Connections.desktop', 'org.gnome.Loupe.desktop']
+apps=['org.gnome.DiskUtility.desktop', 'gnome-system-monitor.desktop', 'org.gnome.Connections.desktop', 'org.gnome.Loupe.desktop']
 categories=['X-GNOME-Utilities']
 name='X-GNOME-Utilities.directory'
 translate=true
