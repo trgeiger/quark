@@ -31,8 +31,8 @@ primary-color='000000'
 secondary-color='FFFFFF'
 
 [org/gnome/desktop/interface]
-font-name="Inter 11"
-document-font-name="Inter 11"
+font-name="Noto Sans 11"
+document-font-name="Noto Sans 11"
 monospace-font-name="CaskaydiaCove Nerd Font Regular 11"
 clock-show-weekday=true
 font-antialiasing="rgba"
@@ -44,7 +44,7 @@ allow-volume-above-100-percent=true
 theme-name="freedesktop"
 
 [org/gnome/desktop/wm/preferences]
-titlebar-font="Inter 11"
+titlebar-font="Noto Sans 11"
 
 [org/gnome/desktop/peripherals/touchpad]
 tap-to-click=true
