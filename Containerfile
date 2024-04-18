@@ -290,7 +290,6 @@ RUN rpm-ostree override replace \
         gnome-epub-thumbnailer \
         gnome-tweaks \
         gnome-shell-extension-just-perfection \
-        gnome-shell-extension-hotedge \
         gnome-shell-extension-system76-scheduler && \
     rpm-ostree override remove \
         gnome-software-rpm-ostree \
