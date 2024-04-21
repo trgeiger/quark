@@ -23,13 +23,12 @@ COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
 # Add custom repos
 RUN mkdir -p /var/lib/alternatives && \
-    wget https://copr.fedorainfracloud.org/coprs/ublue-os/staging/repo/fedora-$(rpm -E %fedora)/ublue-os-staging-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_ublue-os-staging.repo && \
-    wget https://copr.fedorainfracloud.org/coprs/kylegospo/system76-scheduler/repo/fedora-$(rpm -E %fedora)/kylegospo-system76-scheduler-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_kylegospo-system76-scheduler.repo && \
-    wget https://copr.fedorainfracloud.org/coprs/sentry/switcheroo-control_discrete/repo/fedora-$(rpm -E %fedora)/sentry-switcheroo-control_discrete-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_sentry-switcheroo-control_discrete.repo
-
-# RUN rpm-ostree install \
-#         https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
-#         https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+    wget https://github.com/trgeiger/cpm/releases/download/1.0/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
+    cpm enable \
+        ublue-os/staging \
+        kylegospo/system76-scheduler \
+        sentry/switcheroo-control_discrete \
+        bieszczaders/kernel-cachyos
 
 RUN wget -P /tmp/rpms/config \
         https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
@@ -159,8 +158,7 @@ RUN rpm-ostree override replace \
         || true
 
 # Install CachyOS kernel
-RUN wget https://copr.fedorainfracloud.org/coprs/bieszczaders/kernel-cachyos/repo/fedora-$(rpm -E %fedora)/bieszczaders-kernel-cachyos-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_cachyos_kernel.repo && \
-    rpm-ostree cliwrap install-to-root / && \
+RUN rpm-ostree cliwrap install-to-root / && \
     rpm-ostree override remove \
         kernel \
         kernel-core \
@@ -362,7 +360,7 @@ RUN /tmp/image-info.sh && \
     rm -f /usr/share/applications/htop.desktop && \
     rm -f /usr/share/applications/nvtop.desktop && \
     rm -f /usr/share/applications/shredder.desktop && \
-    rm -rf /etc/yum.repos.d/_copr* && \
+    cpm remove --all && \
     mkdir -p /usr/etc/flatpak/remotes.d && \
     wget -q https://dl.flathub.org/repo/flathub.flatpakrepo -P /usr/etc/flatpak/remotes.d && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/org.gnome.Terminal.desktop  && \
@@ -427,8 +425,7 @@ RUN rpm-ostree install \
         virt-manager && \
         rm -f /var/lib/unbound/root.key
 
-RUN rm -f /etc/yum.repos.d/vscode.repo && \
-    rm -f /etc/yum.repos.d/_copr_* && \
+RUN cpm remove --all && \
     rm -f get_helm.sh && \
     rm -rf aws && \
     rm -f awscliv2.zip && \
