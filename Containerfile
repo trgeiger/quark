@@ -300,10 +300,8 @@ RUN rpm-ostree override replace \
     rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
-        switcheroo-control && \
+        switcheroo-control
     # TODO set up copr for patched and additional packages
-    rpm-ostree override replace \
-        /tmp/rpms/override/*.rpm
 
 # Gaming-specific changes
 RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
