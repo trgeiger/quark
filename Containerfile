@@ -23,7 +23,7 @@ COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
 # Add custom repos
 RUN mkdir -p /var/lib/alternatives && \
-    wget https://github.com/trgeiger/cpm/releases/download/1.0/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
+    wget https://github.com/trgeiger/cpm/releases/download/v1.0.1/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
     cpm enable \
         ublue-os/staging \
         kylegospo/system76-scheduler \
