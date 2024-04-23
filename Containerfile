@@ -340,7 +340,7 @@ RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
         gamemode && \
     wget \
         $(curl -s https://api.github.com/repos/ilya-zlobintsev/LACT/releases/latest | \
-        jq -r ".assets[] | select(.name | test(\"lact-libadwaita.*fedora\")) | .browser_download_url") \
+        jq -r ".assets[] | select(.name | test(\"lact-libadwaita.*fedora-40\")) | .browser_download_url") \
         -O /tmp/rpms/lact.rpm && \
     rpm-ostree install \
         /tmp/rpms/lact.rpm && \
