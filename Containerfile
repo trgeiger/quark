@@ -28,7 +28,7 @@ RUN mkdir -p /var/lib/alternatives && \
         ublue-os/staging \
         kylegospo/system76-scheduler \
         sentry/switcheroo-control_discrete \
-        bieszczaders/kernel-cachyos
+        sentry/kernel-fsync
 
 RUN wget -P /tmp/rpms/config \
         https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
@@ -159,18 +159,17 @@ RUN rpm-ostree override replace \
 
 # Install CachyOS kernel
 RUN rpm-ostree cliwrap install-to-root / && \
-    rpm-ostree override remove \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=copr:copr.fedorainfracloud.org:sentry:kernel-fsync \
         kernel \
         kernel-core \
         kernel-modules \
         kernel-modules-core \
         kernel-modules-extra \
-    --install \
-        kernel-cachyos \
-    --install \
-        kernel-cachyos-headers \
-    --install \
-        kernel-cachyos-devel
+        kernel-uki-virt \
+        kernel-headers \
+        kernel-devel
 
 # Removals
 RUN rpm-ostree override remove \
