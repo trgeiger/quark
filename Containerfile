@@ -27,6 +27,7 @@ RUN mkdir -p /var/lib/alternatives && \
     cpm enable \
         ublue-os/staging \
         kylegospo/system76-scheduler \
+        che/nerd-fonts \
         sentry/switcheroo-control_discrete \
         sentry/kernel-fsync
 
@@ -157,7 +158,7 @@ RUN rpm-ostree override replace \
         glibc-all-langpacks \
         || true
 
-# Install CachyOS kernel
+# Install fsync kernel
 RUN rpm-ostree cliwrap install-to-root / && \
     rpm-ostree override replace \
     --experimental \
@@ -196,7 +197,9 @@ RUN rpm-ostree install \
         apr \
         apr-util \
         adw-gtk3-theme \
+        cascadia-code-fonts \
         distrobox \
+        fastfetch \
         ffmpeg \
         ffmpeg-libs \
         ffmpegthumbnailer \
@@ -212,11 +215,13 @@ RUN rpm-ostree install \
         just \
         kernel-tools \
         libheif-freeworld \
-        libheif-tools default-fonts-cjk-sans\
+        libheif-tools \
+        default-fonts-cjk-sans \
         libratbag-ratbagd \
         libva-intel-driver \
         libva-utils \
         lshw \
+        nerd-fonts \
         net-tools \
         nvme-cli \
         nvtop \
