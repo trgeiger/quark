@@ -268,13 +268,7 @@ RUN rpm-ostree install \
     sed -i 's/min_battery_percent.*/min_battery_percent = 20.0/' /usr/etc/ublue-update/ublue-update.toml && \
     sed -i 's/max_cpu_load_percent.*/max_cpu_load_percent = 100.0/' /usr/etc/ublue-update/ublue-update.toml && \
     sed -i 's/max_mem_percent.*/max_mem_percent = 90.0/' /usr/etc/ublue-update/ublue-update.toml && \
-    sed -i 's/dbus_notify.*/dbus_notify = false/' /usr/etc/ublue-update/ublue-update.toml && \
-    # Install patched fonts from Terra then remove repo
-    wget https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo -O /etc/yum.repos.d/terra.repo && \
-    rpm-ostree install \
-        cascadiacode-nerd-fonts \
-        maple-fonts && \
-    rm -rf /etc/yum.repos.d/terra.repo
+    sed -i 's/dbus_notify.*/dbus_notify = false/' /usr/etc/ublue-update/ublue-update.toml
 
 # Gnome stuff
 RUN rpm-ostree override replace \
@@ -382,6 +376,7 @@ RUN /tmp/image-info.sh && \
     echo "import \"/usr/share/ublue-os/just/80-quark.just\"" >> /usr/share/ublue-os/justfile && \
     sed -i '/^PRETTY_NAME/s/Silverblue/Quark/' /usr/lib/os-release && \
     mv /var/lib/alternatives /staged-alternatives && \
+    fc-cache --system-only --really-force --verbose && \
     rm -rf /tmp/* /var/* && \
     ostree container commit && \
     mkdir -p /var/lib && mv /staged-alternatives /var/lib/alternatives && \
