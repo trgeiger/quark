@@ -345,9 +345,6 @@ RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
         vulkan-loader.i686 && \
     rpm-ostree override remove \
         gamemode && \
-    rpm-ostree install \
-        /tmp/rpms/lact.rpm && \
-    systemctl enable lactd && \
     systemctl enable gamescope-workaround.service && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/yad-icon-browser.desktop && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/winetricks.desktop && \
