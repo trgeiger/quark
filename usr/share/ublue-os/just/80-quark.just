@@ -42,4 +42,6 @@ get-steamcmd:
 
 # Install go programming language
 get-go:
-    wget https://go.dev/dl/go1.22.2.linux-amd64.tar.gz -O /tmp/go.tar.gz && sudo tar -C /usr/local -xzf /tmp/go.tar.gz
+    sudo rm -rf /usr/local/go
+    wget https://go.dev/dl/go1.22.2.linux-amd64.tar.gz -O /tmp/go.tar.gz
+    sudo tar -C /usr/local -xzf /tmp/go.tar.gz
