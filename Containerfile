@@ -27,6 +27,7 @@ RUN mkdir -p /var/lib/alternatives && \
     cpm enable \
         ublue-os/staging \
         kylegospo/system76-scheduler \
+        kylegospo/bazzite \
         che/nerd-fonts \
         sentry/switcheroo-control_discrete \
         sentry/kernel-fsync
@@ -277,15 +278,23 @@ RUN rpm-ostree install \
 # Gnome stuff
 RUN rpm-ostree override replace \
     --experimental \
+    --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite \
+        gnome-shell && \
+    rpm-ostree override replace \
+    --experimental \
     --from repo=copr:copr.fedorainfracloud.org:ublue-os:staging \
+        mutter \
         vte291 \
         vte-profile && \
     rpm-ostree install \
         ptyxis \
         nautilus-open-any-terminal \
+        gnome-randr-rust \
         gnome-epub-thumbnailer \
         gnome-tweaks \
+        gnome-shell-extension-blur-my-shell \
         gnome-shell-extension-just-perfection \
+        gnome-shell-extension-hotedge \
         gnome-shell-extension-system76-scheduler && \
     rpm-ostree override remove \
         gnome-software-rpm-ostree \
@@ -411,9 +420,6 @@ RUN curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/crc/la
 RUN curl -SL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip && \
     unzip awscliv2.zip && \
     ./aws/install --bin-dir /usr/bin --install-dir /usr/bin
-
-# Install go
-RUN wget https://go.dev/dl/go1.22.2.linux-amd64.tar.gz -O /tmp/go.tar.gz && tar -C /usr/local -xzf /tmp/go.tar.gz
 
 # VSCode repo
 RUN echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo && rpm --import https://packages.microsoft.com/keys/microsoft.asc
