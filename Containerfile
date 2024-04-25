@@ -283,13 +283,11 @@ RUN rpm-ostree override replace \
     rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:ublue-os:staging \
-        mutter \
         vte291 \
         vte-profile && \
     rpm-ostree install \
         ptyxis \
         nautilus-open-any-terminal \
-        gnome-randr-rust \
         gnome-epub-thumbnailer \
         gnome-tweaks \
         gnome-shell-extension-blur-my-shell \
