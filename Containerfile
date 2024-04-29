@@ -232,6 +232,8 @@ RUN rpm-ostree install \
         pam_yubico \
         pamu2fcfg \
         pipewire-codec-aptx \
+        podman-docker \
+        podman-compose \
         smartmontools \
         solaar-udev \
         symlinks \
