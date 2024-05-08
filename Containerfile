@@ -280,11 +280,10 @@ RUN rpm-ostree install \
 # Gnome stuff
 RUN rpm-ostree override replace \
     --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite \
-        gnome-shell && \
-    rpm-ostree override replace \
-    --experimental \
     --from repo=copr:copr.fedorainfracloud.org:ublue-os:staging \
+        gnome-shell \
+        mutter \
+        mutter-common \
         vte291 \
         vte-profile && \
     rpm-ostree install \
@@ -293,6 +292,8 @@ RUN rpm-ostree override replace \
         gnome-epub-thumbnailer \
         gnome-tweaks \
         gnome-shell-extension-blur-my-shell \
+        gnome-shell-extension-compiz-windows-effect \
+        gnome-shell-extension-compiz-alike-magic-lamp-effect \
         gnome-shell-extension-just-perfection \
         gnome-shell-extension-hotedge \
         gnome-shell-extension-system76-scheduler && \
