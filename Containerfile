@@ -40,46 +40,46 @@ RUN wget -P /tmp/rpms/config \
         /tmp/rpms/config/*.rpm \
         fedora-repos-archive
 
+# Update packages that commonly cause build issues
 RUN rpm-ostree override replace \
     --experimental \
-    --from repo=updates-testing \
+    --from repo=updates \
         vulkan-loader \
         || true && \
     rpm-ostree override replace \
     --experimental \
-    --from repo=updates-testing \
+    --from repo=updates \
         alsa-lib \
         || true && \
     rpm-ostree override replace \
     --experimental \
-    --from repo=updates-testing \
+    --from repo=updates \
         gnutls \
         || true && \
     rpm-ostree override replace \
     --experimental \
-    --from repo=updates-testing \
+    --from repo=updates \
         glib2 \
         || true && \
     rpm-ostree override replace \
     --experimental \
-    --from repo=updates-testing \
+    --from repo=updates \
         gtk3 \
         || true && \
     rpm-ostree override replace \
     --experimental \
-    --from repo=updates-testing \
+    --from repo=updates \
         atk \
         at-spi2-atk \
-        at-spi2-core \
         || true && \
     rpm-ostree override replace \
     --experimental \
-    --from repo=updates-testing \
+    --from repo=updates \
         libaom \
         || true && \
     rpm-ostree override replace \
     --experimental \
-    --from repo=updates-testing \
+    --from repo=updates \
         gstreamer1 \
         gstreamer1-plugins-base \
         gstreamer1-plugins-bad-free-libs \
@@ -91,72 +91,52 @@ RUN rpm-ostree override replace \
         || true && \
     rpm-ostree override replace \
     --experimental \
-    --from repo=updates-testing \
+    --from repo=updates \
         python3 \
         python3-libs \
         || true && \
     rpm-ostree override replace \
     --experimental \
-    --from repo=updates-testing \
+    --from repo=updates \
         libdecor \
         || true && \
     rpm-ostree override replace \
     --experimental \
-    --from repo=updates-testing \
+    --from repo=updates \
         libtirpc \
         || true && \
     rpm-ostree override replace \
     --experimental \
-    --from repo=updates-testing \
+    --from repo=updates \
         libuuid \
         || true && \
     rpm-ostree override replace \
     --experimental \
-    --from repo=updates-testing \
+    --from repo=updates \
         libblkid \
         || true && \
     rpm-ostree override replace \
     --experimental \
-    --from repo=updates-testing \
+    --from repo=updates \
         libmount \
         || true && \
     rpm-ostree override replace \
     --experimental \
-    --from repo=updates-testing \
+    --from repo=updates \
         cups-libs \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        libinput \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        libopenmpt \
         || true && \
     rpm-ostree override remove \
         glibc32 \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates-testing \
-        pipewire \
-        pipewire-alsa \
-        pipewire-gstreamer \
-        pipewire-jack-audio-connection-kit \
-        pipewire-jack-audio-connection-kit-libs \
-        pipewire-libs \
-        pipewire-pulseaudio \
-        pipewire-utils \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates-testing \
-        xz-libs \
-        || true
-RUN rpm-ostree override replace \
-    --experimental \
-    --from repo=updates-testing \
-        gcc \
-        cpp \
-        libgomp \
-        libgcc \
-        glibc \
-        glibc-devel \
-        glibc-common \
-        glibc-gconv-extra \
-        glibc-all-langpacks \
         || true
 
 # Install fsync kernel
@@ -314,36 +294,39 @@ RUN rpm-ostree override replace \
 # Gaming-specific changes
 RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
     rpm-ostree install \
-        NetworkManager-libnm.i686 \
-        alsa-lib.i686 \
+        jupiter-sd-mounting-btrfs \
         at-spi2-core.i686 \
         atk.i686 \
-        clinfo \
+        vulkan-loader.i686 \
+        alsa-lib.i686 \
         fontconfig.i686 \
-        gamescope \
         gtk2.i686 \
         libICE.i686 \
-        libXScrnSaver.i686 \
+        libnsl.i686 \
+        libxcrypt-compat.i686 \
+        libpng12.i686 \
         libXext.i686 \
         libXinerama.i686 \
         libXtst.i686 \
-        libatomic.i686 \
+        libXScrnSaver.i686 \
+        NetworkManager-libnm.i686 \
+        nss.i686 \
+        pulseaudio-libs.i686 \
         libcurl.i686 \
-        libdbusmenu-gtk3.i686 \
-        libnsl.i686 \
-        libpng12.i686 \
+        systemd-libs.i686 \
         libva.i686 \
         libvdpau.i686 \
-        libxcrypt-compat.i686 \
-        mangohud \
-        nss.i686 \
+        libdbusmenu-gtk3.i686 \
+        libatomic.i686 \
         pipewire-alsa.i686 \
+        clinfo && \
+    rpm-ostree install \
+        steam && \
+    rpm-ostree install \
+        gamescope \
+        mangohud \
         protontricks \
-        pulseaudio-libs.i686 \
-        steam \
-        systemd-libs.i686 \
-        vkBasalt \
-        vulkan-loader.i686 && \
+        vkBasalt && \
     rpm-ostree override remove \
         gamemode && \
     systemctl enable gamescope-workaround.service && \
