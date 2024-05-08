@@ -1,1 +1,3 @@
-MUTTER_DEBUG_FORCE_KMS_MODE=simple
+# https://gitlab.gnome.org/GNOME/mutter/-/issues/3037
+# Also prevents crashing from games locking up rt thread
+MUTTER_DEBUG_KMS_THREAD_TYPE=user
