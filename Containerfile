@@ -18,7 +18,6 @@ ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
 COPY etc /etc
 COPY usr /usr
 COPY tmp /tmp
-COPY rpms /tmp/rpms
 COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
 # Add custom repos
