@@ -150,8 +150,10 @@ RUN rpm-ostree cliwrap install-to-root / && \
 
 # Removals
 RUN rpm-ostree override remove \
+        ffmpeg-free \
         google-noto-sans-cjk-vf-fonts \
         libavcodec-free \
+        libavdevice-free \
         libavfilter-free \
         libavformat-free \
         libavutil-free \

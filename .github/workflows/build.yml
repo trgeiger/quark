@@ -133,7 +133,7 @@ jobs:
         with:
           image: ${{ steps.build_image.outputs.image }}
           default-tag: ${{ env.DEFAULT_TAG }}
-          suffix: cachyos
+          kernel_suffix: cachyos
           privkey: ${{ secrets.QUARK_PRIVKEY_18012024 }}
           pubkey: /etc/pki/akmods/certs/quark-secure-boot.der
           tags: ${{ steps.build_image.outputs.tags }}
