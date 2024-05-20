@@ -29,7 +29,7 @@ RUN mkdir -p /var/lib/alternatives && \
         kylegospo/bazzite \
         che/nerd-fonts \
         sentry/switcheroo-control_discrete \
-        sentry/kernel-fsync
+        bieszczaders/kernel-cachyos
 
 RUN wget -P /tmp/rpms/config \
         https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
@@ -140,17 +140,13 @@ RUN rpm-ostree override replace \
 
 # Install fsync kernel
 RUN rpm-ostree cliwrap install-to-root / && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:sentry:kernel-fsync \
+    rpm-ostree override remove \
+        --install kernel-cachyos \
         kernel \
         kernel-core \
         kernel-modules \
         kernel-modules-core \
-        kernel-modules-extra \
-        kernel-uki-virt \
-        kernel-headers \
-        kernel-devel
+        kernel-modules-extra
 
 # Removals
 RUN rpm-ostree override remove \
