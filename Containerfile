@@ -22,7 +22,7 @@ COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
 # Add custom repos
 RUN mkdir -p /var/lib/alternatives && \
-    wget https://github.com/trgeiger/cpm/releases/download/v1.0.1/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
+    wget https://github.com/trgeiger/cpm/releases/download/v1.0.2/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
     cpm enable \
         ublue-os/staging \
         kylegospo/system76-scheduler \
@@ -319,11 +319,18 @@ RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
         clinfo && \
     rpm-ostree install \
         steam && \
+    cpm enable \
+        -m \
+        kylegospo/bazzite-multilib && \
     rpm-ostree install \
-        gamescope \
-        mangohud \
-        protontricks \
-        vkBasalt && \
+        gamescope.x86_64 \
+        gamescope-libs.i686 \
+        gamescope-shaders \
+        vkBasalt.x86_64 \
+        vkBasalt.i686 \
+        mangohud.x86_64 \
+        mangohud.i686 \
+        protontricks && \
     rpm-ostree override remove \
         gamemode && \
     systemctl enable gamescope-workaround.service && \
