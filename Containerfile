@@ -18,6 +18,7 @@ ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
 COPY etc /etc
 COPY usr /usr
 COPY tmp /tmp
+COPY rpms /rpms
 COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
 # Add custom repos
@@ -167,6 +168,21 @@ RUN rpm-ostree override remove \
     rpm-ostree override remove \
         power-profiles-daemon \
         || true
+
+RUN cpm enable -m trouter/bazzite-multilib && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=copr:copr.fedorainfracloud.org:trouter:bazzite-multilib  \
+        mesa-filesystem \
+        mesa-libxatracker \
+        mesa-libglapi \
+        mesa-dri-drivers \
+        mesa-libgbm \
+        mesa-libEGL \
+        mesa-vulkan-drivers \
+        mesa-libGL && \
+    cpm enable -m kylegospo/bazzite-multilib
+
 
 # Additions
 RUN rpm-ostree install \
