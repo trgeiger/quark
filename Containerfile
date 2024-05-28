@@ -18,12 +18,12 @@ ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
 COPY etc /etc
 COPY usr /usr
 COPY tmp /tmp
-COPY rpms /rpms
+COPY rpms /tmp/rpms
 COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
 # Add custom repos
 RUN mkdir -p /var/lib/alternatives && \
-    wget https://github.com/trgeiger/cpm/releases/download/v1.0.2/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
+    wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
     cpm enable \
         ublue-os/staging \
         kylegospo/system76-scheduler \
@@ -181,8 +181,9 @@ RUN cpm enable -m trouter/bazzite-multilib && \
         mesa-libEGL \
         mesa-vulkan-drivers \
         mesa-libGL && \
-    cpm enable -m kylegospo/bazzite-multilib
-
+    cpm enable -m kylegospo/bazzite-multilib && \
+    rpm-ostree override replace \
+        /tmp/rpms/override/*.rpm
 
 # Additions
 RUN rpm-ostree install \
@@ -335,9 +336,6 @@ RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
         clinfo && \
     rpm-ostree install \
         steam && \
-    cpm enable \
-        -m \
-        kylegospo/bazzite-multilib && \
     rpm-ostree install \
         gamescope.x86_64 \
         gamescope-libs.i686 \
