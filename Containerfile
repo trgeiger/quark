@@ -18,11 +18,12 @@ ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
 COPY etc /etc
 COPY usr /usr
 COPY tmp /tmp
+COPY rpms /tmp/rpms
 COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
 # Add custom repos
 RUN mkdir -p /var/lib/alternatives && \
-    wget https://github.com/trgeiger/cpm/releases/download/v1.0.1/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
+    wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
     cpm enable \
         ublue-os/staging \
         kylegospo/system76-scheduler \
@@ -168,6 +169,37 @@ RUN rpm-ostree override remove \
         power-profiles-daemon \
         || true
 
+RUN cpm enable -m trouter/bazzite-multilib && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=copr:copr.fedorainfracloud.org:trouter:bazzite-multilib  \
+        mesa-filesystem \
+        mesa-libxatracker \
+        mesa-libglapi \
+        mesa-dri-drivers \
+        mesa-libgbm \
+        mesa-libEGL \
+        mesa-vulkan-drivers \
+        mesa-libGL && \
+    cpm enable -m kylegospo/bazzite-multilib && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib \
+        pipewire \
+        pipewire-alsa \
+        pipewire-gstreamer \
+        pipewire-jack-audio-connection-kit \
+        pipewire-jack-audio-connection-kit-libs \
+        pipewire-libs \
+        pipewire-pulseaudio \
+        pipewire-utils \
+        bluez \
+        bluez-obexd \
+        bluez-cups \
+        bluez-libs && \
+    rpm-ostree override replace \
+        /tmp/rpms/override/*.rpm
+
 # Additions
 RUN rpm-ostree install \
         alsa-firmware \
@@ -291,39 +323,16 @@ RUN rpm-ostree override replace \
 # Gaming-specific changes
 RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
     rpm-ostree install \
-        jupiter-sd-mounting-btrfs \
-        at-spi2-core.i686 \
-        atk.i686 \
-        vulkan-loader.i686 \
-        alsa-lib.i686 \
-        fontconfig.i686 \
-        gtk2.i686 \
-        libICE.i686 \
-        libnsl.i686 \
-        libxcrypt-compat.i686 \
-        libpng12.i686 \
-        libXext.i686 \
-        libXinerama.i686 \
-        libXtst.i686 \
-        libXScrnSaver.i686 \
-        NetworkManager-libnm.i686 \
-        nss.i686 \
-        pulseaudio-libs.i686 \
-        libcurl.i686 \
-        systemd-libs.i686 \
-        libva.i686 \
-        libvdpau.i686 \
-        libdbusmenu-gtk3.i686 \
-        libatomic.i686 \
-        pipewire-alsa.i686 \
-        clinfo && \
-    rpm-ostree install \
         steam && \
     rpm-ostree install \
-        gamescope \
-        mangohud \
-        protontricks \
-        vkBasalt && \
+        gamescope.x86_64 \
+        gamescope-libs.i686 \
+        gamescope-shaders \
+        vkBasalt.x86_64 \
+        vkBasalt.i686 \
+        mangohud.x86_64 \
+        mangohud.i686 \
+        protontricks && \
     rpm-ostree override remove \
         gamemode && \
     systemctl enable gamescope-workaround.service && \
