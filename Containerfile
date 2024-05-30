@@ -323,6 +323,32 @@ RUN rpm-ostree override replace \
 # Gaming-specific changes
 RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
     rpm-ostree install \
+        jupiter-sd-mounting-btrfs \
+        at-spi2-core.i686 \
+        atk.i686 \
+        vulkan-loader.i686 \
+        alsa-lib.i686 \
+        fontconfig.i686 \
+        gtk2.i686 \
+        libICE.i686 \
+        libnsl.i686 \
+        libxcrypt-compat.i686 \
+        libpng12.i686 \
+        libXext.i686 \
+        libXinerama.i686 \
+        libXtst.i686 \
+        libXScrnSaver.i686 \
+        NetworkManager-libnm.i686 \
+        nss.i686 \
+        pulseaudio-libs.i686 \
+        libcurl.i686 \
+        systemd-libs.i686 \
+        libva.i686 \
+        libvdpau.i686 \
+        libdbusmenu-gtk3.i686 \
+        libatomic.i686 \
+        pipewire-alsa.i686 \
+        clinfo \
         steam && \
     rpm-ostree install \
         gamescope.x86_64 \
