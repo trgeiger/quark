@@ -1,6 +1,6 @@
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
 ARG IMAGE_FLAVOR="${IMAGE_FLAVOR:-main}"
-ARG IMAGE_BRANCH="${IMAGE_BRANCH}"
+ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
 # ARG SOURCE_IMAGE="${SOURCE_IMAGE:-$BASE_IMAGE_NAME-$IMAGE_FLAVOR}"
 ARG SOURCE_IMAGE="${SOURCE_IMAGE:-$BASE_IMAGE_NAME}"
 ARG BASE_IMAGE="quay.io/fedora-ostree-desktops/${SOURCE_IMAGE}"
@@ -12,11 +12,11 @@ FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS quark
 ARG IMAGE_NAME="${IMAGE_NAME:-quark}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
 ARG IMAGE_FLAVOR="${IMAGE_FLAVOR}"
+ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
 
-COPY etc /etc
-COPY usr /usr
+COPY system_files/shared /
 COPY tmp /tmp
 COPY rpms /tmp/rpms
 COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
@@ -413,6 +413,7 @@ ARG IMAGE_NAME="${IMAGE_NAME:-quark-cloud-dev}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME}"
 ARG IMAGE_FLAVOR="${IMAGE_FLAVOR}"
+ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION}"
 
 # Install Openshift tools -- oc, opm, kubectl, operator-sdk, odo, helm, crc
@@ -453,4 +454,38 @@ RUN cpm remove --all && \
     rm -f /usr/bin/LICENSE && \
     rm -rf /tmp/* /var/* && \
     sed -i '/^PRETTY_NAME/s/Quark/Quark Cloud Dev/' /usr/lib/os-release && \
+    ostree container commit
+
+
+FROM ghcr.io/ublue-os/akmods-nvidia:main-${FEDORA_MAJOR_VERSION} as nvidia-akmods
+FROM quark as quark-nvidia
+
+ARG IMAGE_NAME="${IMAGE_NAME:-quark-nvidia}"
+ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
+ARG IMAGE_FLAVOR="${IMAGE_FLAVOR:-nvidia}"
+ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
+ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
+ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
+
+# Fetch NVIDIA driver
+COPY system_files/nvidia /
+
+# Install NVIDIA driver
+COPY --from=nvidia-akmods /rpms /tmp/akmods-rpms
+RUN sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-nonfree.repo && \
+    sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-nonfree-updates.repo && \
+    sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
+    curl -Lo /tmp/nvidia-install.sh https://raw.githubusercontent.com/ublue-os/hwe/main/nvidia-install.sh && \
+    chmod +x /tmp/nvidia-install.sh && \
+    IMAGE_NAME="${BASE_IMAGE_NAME}" RPMFUSION_MIRROR="" /tmp/nvidia-install.sh && \
+    ostree container commit
+
+# Cleanup & Finalize
+# RUN /usr/libexec/containerbuild/build-initramfs && \
+RUN /usr/libexec/containerbuild/image-info && \
+    rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json && \
+    # echo "import \"/usr/share/ublue-os/just/95-bazzite-nvidia.just\"" >> /usr/share/ublue-os/justfile && \
+    # sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-nonfree.repo && \
+    # sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-nonfree-updates.repo && \
+    # sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
     ostree container commit
