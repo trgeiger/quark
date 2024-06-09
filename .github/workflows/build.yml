@@ -25,7 +25,7 @@ jobs:
       fail-fast: false
       matrix:
         image_flavor: [main]
-        base_name: [quark, quark-cloud-dev]
+        base_name: [quark, quark-cloud-dev, quark-nvidia]
         fedora_version: [40]
         include:
           - major_version: 40
