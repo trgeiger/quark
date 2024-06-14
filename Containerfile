@@ -28,6 +28,7 @@ RUN mkdir -p /var/lib/alternatives && \
         ublue-os/staging \
         kylegospo/system76-scheduler \
         kylegospo/bazzite \
+        kylegospo/bazzite-multilib \
         che/nerd-fonts \
         sentry/switcheroo-control_discrete \
         bieszczaders/kernel-cachyos
@@ -169,10 +170,9 @@ RUN rpm-ostree override remove \
         power-profiles-daemon \
         || true
 
-RUN cpm enable -m trouter/bazzite-multilib && \
-    rpm-ostree override replace \
+RUN rpm-ostree override replace \
     --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:trouter:bazzite-multilib  \
+    --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib  \
         mesa-filesystem \
         mesa-libxatracker \
         mesa-libglapi \
@@ -180,11 +180,7 @@ RUN cpm enable -m trouter/bazzite-multilib && \
         mesa-libgbm \
         mesa-libEGL \
         mesa-vulkan-drivers \
-        mesa-libGL && \
-    cpm enable -m kylegospo/bazzite-multilib && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib \
+        mesa-libGL \
         pipewire \
         pipewire-alsa \
         pipewire-gstreamer \
