@@ -19,6 +19,7 @@ ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
 COPY system_files/shared /
 COPY tmp /tmp
 COPY rpms /tmp/rpms
+COPY system_files/nvidia /tmp/nvidia
 COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
 # Add custom repos
@@ -28,9 +29,10 @@ RUN mkdir -p /var/lib/alternatives && \
         ublue-os/staging \
         kylegospo/system76-scheduler \
         kylegospo/bazzite \
+        kylegospo/bazzite-multilib \
         che/nerd-fonts \
         sentry/switcheroo-control_discrete \
-        bieszczaders/kernel-cachyos
+        sentry/kernel-fsync
 
 RUN wget -P /tmp/rpms/config \
         https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
@@ -141,13 +143,17 @@ RUN rpm-ostree override replace \
 
 # Install fsync kernel
 RUN rpm-ostree cliwrap install-to-root / && \
-    rpm-ostree override remove \
-        --install kernel-cachyos \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=copr:copr.fedorainfracloud.org:sentry:kernel-fsync \
         kernel \
         kernel-core \
         kernel-modules \
         kernel-modules-core \
-        kernel-modules-extra
+        kernel-modules-extra \
+        kernel-uki-virt \
+        kernel-headers \
+        kernel-devel 
 
 # Removals
 RUN rpm-ostree override remove \
@@ -169,10 +175,9 @@ RUN rpm-ostree override remove \
         power-profiles-daemon \
         || true
 
-RUN cpm enable -m trouter/bazzite-multilib && \
-    rpm-ostree override replace \
+RUN rpm-ostree override replace \
     --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:trouter:bazzite-multilib  \
+    --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib  \
         mesa-filesystem \
         mesa-libxatracker \
         mesa-libglapi \
@@ -180,11 +185,7 @@ RUN cpm enable -m trouter/bazzite-multilib && \
         mesa-libgbm \
         mesa-libEGL \
         mesa-vulkan-drivers \
-        mesa-libGL && \
-    cpm enable -m kylegospo/bazzite-multilib && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib \
+        mesa-libGL \
         pipewire \
         pipewire-alsa \
         pipewire-gstreamer \
@@ -196,9 +197,9 @@ RUN cpm enable -m trouter/bazzite-multilib && \
         bluez \
         bluez-obexd \
         bluez-cups \
-        bluez-libs && \
-    rpm-ostree override replace \
-        /tmp/rpms/override/*.rpm
+        bluez-libs
+    # rpm-ostree override replace \
+    #     /tmp/rpms/override/*.rpm
 
 # Additions
 RUN rpm-ostree install \
@@ -368,6 +369,11 @@ RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
 
     ; fi
 
+RUN if [[ "${IMAGE_NAME}" == "quark-nvidia" ]]; then \
+    rpm-ostree install /tmp/rpms/nvidia/*.rpm && \
+    cp /tmp/nvidia /
+    ; fi
+
 # run post-install tasks and clean up
 RUN /tmp/image-info.sh && \
     rm -f /usr/share/vulkan/icd.d/lvp_icd.*.json && \
@@ -468,24 +474,3 @@ ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
 
 # Fetch NVIDIA driver
-COPY system_files/nvidia /
-
-# Install NVIDIA driver
-COPY --from=nvidia-akmods /rpms /tmp/akmods-rpms
-RUN sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-nonfree.repo && \
-    sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-nonfree-updates.repo && \
-    sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
-    curl -Lo /tmp/nvidia-install.sh https://raw.githubusercontent.com/ublue-os/hwe/main/nvidia-install.sh && \
-    chmod +x /tmp/nvidia-install.sh && \
-    IMAGE_NAME="${BASE_IMAGE_NAME}" RPMFUSION_MIRROR="" /tmp/nvidia-install.sh && \
-    ostree container commit
-
-# Cleanup & Finalize
-# RUN /usr/libexec/containerbuild/build-initramfs && \
-RUN /usr/libexec/containerbuild/image-info && \
-    rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json && \
-    # echo "import \"/usr/share/ublue-os/just/95-bazzite-nvidia.just\"" >> /usr/share/ublue-os/justfile && \
-    # sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-nonfree.repo && \
-    # sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-nonfree-updates.repo && \
-    # sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
-    ostree container commit
