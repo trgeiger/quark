@@ -39,6 +39,9 @@ jobs:
         run: |
           echo "IMAGE_NAME=${{ matrix.base_name }}" >> $GITHUB_ENV
 
+      - name: Maximize build space
+        uses: ublue-os/remove-unwanted-software@v7
+
       - name: Generate tags
         id: generate-tags
         shell: bash
