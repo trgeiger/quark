@@ -13,13 +13,13 @@ ARG IMAGE_NAME="${IMAGE_NAME:-quark}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
 ARG IMAGE_FLAVOR="${IMAGE_FLAVOR}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
+ARG KERNEL_FLAVOR="${KERNEL_FLAVOR}"
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
 
 COPY system_files/shared /
 COPY tmp /tmp
 # COPY rpms /tmp/rpms
-COPY system_files/nvidia /tmp/nvidia
 COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
 # Add custom repos
@@ -27,7 +27,6 @@ RUN mkdir -p /var/lib/alternatives && \
     wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
     cpm enable \
         ublue-os/staging \
-        kylegospo/system76-scheduler \
         kylegospo/bazzite \
         che/nerd-fonts \
         sentry/switcheroo-control_discrete \
@@ -157,6 +156,18 @@ rpm-ostree override replace \
     || true $$ \
 rpm-ostree override remove \
     glibc32 \
+    || true && \
+rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+    cpp \
+    libgcc \
+    libgomp \
+    || true && \
+rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+    libstdc++ \
     || true
 
 # Install fsync kernel
@@ -170,9 +181,9 @@ RUN rpm-ostree cliwrap install-to-root / && \
         kernel-modules \
         kernel-modules-core \
         kernel-modules-extra \
-        kernel-uki-virt \
-        kernel-headers \
-        kernel-devel 
+        kernel-uki-virt
+        # kernel-headers \
+        # kernel-devel 
 
 # Removals
 RUN rpm-ostree override remove \
@@ -247,7 +258,6 @@ RUN rpm-ostree install \
         google-noto-sans-javanese-fonts \
         google-noto-sans-sundanese-fonts \
         grub2-tools-extra \
-        heif-pixbuf-loader \
         htop \
         intel-media-driver \
         just \
@@ -290,7 +300,6 @@ RUN rpm-ostree install \
         python3-pip \
         rsms-inter-fonts \
         setools \
-        system76-scheduler \
         tuned \
         tuned-gtk \
         tuned-ppd \
@@ -318,27 +327,22 @@ RUN rpm-ostree override replace \
         gnome-shell \
         mutter \
         mutter-common \
-        vte291 \
-        vte-profile && \
+        gnome-shell && \
     rpm-ostree install \
         ptyxis \
         nautilus-open-any-terminal \
         gnome-epub-thumbnailer \
         gnome-tweaks \
         gnome-shell-extension-blur-my-shell \
-        gnome-shell-extension-compiz-windows-effect \
-        gnome-shell-extension-compiz-alike-magic-lamp-effect \
         gnome-shell-extension-just-perfection \
-        gnome-shell-extension-hotedge \
-        gnome-shell-extension-system76-scheduler && \
+        gnome-shell-extension-hotedge && \
     rpm-ostree override remove \
         gnome-software-rpm-ostree \
         gnome-tour \
         gnome-extensions-app \
         gnome-classic-session \
         gnome-classic-session-xsession \
-        gnome-terminal-nautilus \
-        yelp
+        gnome-terminal-nautilus
 
 # Gaming-specific changes
 RUN if [[ "${IMAGE_NAME}" == "quark" ]] || [[ "${IMAGE_NAME}" == "quark-nvidia" ]]; then \
@@ -368,8 +372,23 @@ RUN if [[ "${IMAGE_NAME}" == "quark" ]] || [[ "${IMAGE_NAME}" == "quark-nvidia" 
         libdbusmenu-gtk3.i686 \
         libatomic.i686 \
         pipewire-alsa.i686 \
-        clinfo \
+        clinfo && \
+    sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/fedora-updates.repo && \
+    rpm-ostree install \
+        mesa-vulkan-drivers.i686 \
+        mesa-va-drivers-freeworld.i686 \
+        mesa-vdpau-drivers-freeworld.i686 && \
+    sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree-steam.repo && \
+    sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree.repo && \
+    sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree-updates.repo && \
+    sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
+    rpm-ostree install \
         steam && \
+    sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree-steam.repo && \
+    sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree.repo && \
+    sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree-updates.repo && \
+    sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
+    sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/fedora-updates.repo && \
     rpm-ostree install \
         gamescope.x86_64 \
         gamescope-libs.i686 \
@@ -395,15 +414,20 @@ RUN if [[ "${IMAGE_NAME}" == "quark-nvidia" ]]; then \
         nvidia-driver \
         nvidia-driver-libs.i686 \
         nvidia-settings \
-        nvidia-driver-cuda  && \
-    cp -r /tmp/nvidia / && \
-    rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json \
-
+        nvidia-driver-cuda \
+        libva-nvidia-driver \
+        mesa-vulkan-drivers.i686 && \
+    mkdir -p /var/cache/akmods && \
+    mkdir -p /var/log/akmods && \
+    akmods --force --kernels "$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" --kmod nvidia && \
+    rpm-ostree install \
+            /var/cache/akmods/nvidia/kmod-*.rpm \
 
     ; fi
 
 # run post-install tasks and clean up
-RUN /tmp/image-info.sh && \
+RUN /usr/libexec/containerbuild/build-initramfs && \
+    /tmp/image-info.sh && \
     rm -f /usr/share/vulkan/icd.d/lvp_icd.*.json && \
     rm -f /usr/share/applications/htop.desktop && \
     rm -f /usr/share/applications/nvtop.desktop && \
@@ -417,7 +441,6 @@ RUN /tmp/image-info.sh && \
     install -c -m 0755 /tmp/starship /usr/bin && \
     echo 'eval "$(starship init bash)"' >> /etc/bashrc && \
     echo 'eval "$(starship init zsh)"' >> /etc/zshrc && \
-    systemctl enable com.system76.Scheduler.service && \
     systemctl enable tuned.service && \
     systemctl enable btrfs-dedup@var-home.timer && \
     systemctl enable dconf-update.service && \
@@ -435,7 +458,31 @@ RUN /tmp/image-info.sh && \
     ostree container commit && \
     mkdir -p /var/lib && mv /staged-alternatives /var/lib/alternatives && \
     mkdir -p /tmp /var/tmp && \
+    curl -Lo /usr/lib/sysctl.d/99-bore-scheduler.conf https://github.com/CachyOS/CachyOS-Settings/raw/master/usr/lib/sysctl.d/99-bore-scheduler.conf && \
     chmod -R 1777 /tmp /var/tmp
+
+
+# NVIDIA build
+FROM quark as quark-nvidia
+
+ARG IMAGE_NAME="${IMAGE_NAME:-quark-nvidia}"
+ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
+ARG IMAGE_FLAVOR="${IMAGE_FLAVOR}"
+ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
+ARG KERNEL_FLAVOR="${KERNEL_FLAVOR}"
+ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
+ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
+
+# RUN mkdir -p /var/cache/akmods && \
+#     mkdir -p /var/log/akmods && \
+#     akmods --force --kernels "$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" --kmod nvidia
+
+# RUN rpm-ostree install \
+#         /var/cache/akmods/nvidia/kmod-*.rpm
+
+RUN /usr/libexec/containerbuild/build-initramfs && \
+    rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json && \
+    ostree container commit
 
 
 # cloud development build
@@ -443,9 +490,10 @@ FROM quark as quark-cloud-dev
 
 ARG IMAGE_NAME="${IMAGE_NAME:-quark-cloud-dev}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
-ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME}"
 ARG IMAGE_FLAVOR="${IMAGE_FLAVOR}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
+ARG KERNEL_FLAVOR="${KERNEL_FLAVOR}"
+ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION}"
 
 # Install Openshift tools -- oc, opm, kubectl, operator-sdk, odo, helm, crc
@@ -486,20 +534,4 @@ RUN cpm remove --all && \
     rm -f /usr/bin/LICENSE && \
     rm -rf /tmp/* /var/* && \
     sed -i '/^PRETTY_NAME/s/Quark/Quark Cloud Dev/' /usr/lib/os-release && \
-    ostree container commit
-
-FROM quark as quark-nvidia
-
-ARG IMAGE_NAME="${IMAGE_NAME:-quark-nvidia}"
-ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
-ARG IMAGE_FLAVOR="${IMAGE_FLAVOR}"
-ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
-ARG KERNEL_FLAVOR="${KERNEL_FLAVOR}"
-ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
-ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
-
-COPY system_files/nvidia /
-
-RUN #/usr/libexec/containerbuild/build-initramfs && \
-    rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json && \
     ostree container commit
