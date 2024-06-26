@@ -13,12 +13,13 @@ ARG IMAGE_NAME="${IMAGE_NAME:-quark}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
 ARG IMAGE_FLAVOR="${IMAGE_FLAVOR}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
+ARG KERNEL_FLAVOR="${KERNEL_FLAVOR}"
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
 
 COPY system_files/shared /
 COPY tmp /tmp
-COPY rpms /tmp/rpms
+# COPY rpms /tmp/rpms
 COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
 # Add custom repos
@@ -26,11 +27,14 @@ RUN mkdir -p /var/lib/alternatives && \
     wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
     cpm enable \
         ublue-os/staging \
-        kylegospo/system76-scheduler \
         kylegospo/bazzite \
         che/nerd-fonts \
         sentry/switcheroo-control_discrete \
-        bieszczaders/kernel-cachyos
+        sentry/kernel-fsync && \
+    cpm enable -m \
+        kylegospo/bazzite-multilib
+
+#RUN curl -Lo /etc/yum.repos.d/vanilla-kernel.repo https://copr.fedorainfracloud.org/coprs/g/kernel-vanilla/mainline-wo-mergew/repo/fedora-40/group_kernel-vanilla-mainline-wo-mergew-fedora-40.repo
 
 RUN wget -P /tmp/rpms/config \
         https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
@@ -42,112 +46,144 @@ RUN wget -P /tmp/rpms/config \
 
 # Update packages that commonly cause build issues
 RUN rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    vulkan-loader \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    alsa-lib \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    gnutls \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    glib2 \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    gtk3 \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    atk \
+    at-spi2-atk \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    libaom \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    gstreamer1 \
+    gstreamer1-plugins-base \
+    gstreamer1-plugins-bad-free-libs \
+    gstreamer1-plugins-good-qt \
+    gstreamer1-plugins-good \
+    gstreamer1-plugins-bad-free \
+    gstreamer1-plugin-libav \
+    gstreamer1-plugins-ugly-free \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    python3 \
+    python3-libs \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    libdecor \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    libtirpc \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    libuuid \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    libblkid \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    libmount \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    cups-libs \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    libinput \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    libopenmpt \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    llvm-libs \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    fontconfig \
+    || true && \
+rpm-ostree override replace \
+--experimental \
+--from repo=updates \
+    libxml2 \
+    || true $$ \
+rpm-ostree override remove \
+    glibc32 \
+    || true && \
+rpm-ostree override replace \
     --experimental \
     --from repo=updates \
-        vulkan-loader \
-        || true && \
-    rpm-ostree override replace \
+    cpp \
+    libgcc \
+    libgomp \
+    || true && \
+rpm-ostree override replace \
     --experimental \
     --from repo=updates \
-        alsa-lib \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        gnutls \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        glib2 \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        gtk3 \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        atk \
-        at-spi2-atk \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libaom \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        gstreamer1 \
-        gstreamer1-plugins-base \
-        gstreamer1-plugins-bad-free-libs \
-        gstreamer1-plugins-good-qt \
-        gstreamer1-plugins-good \
-        gstreamer1-plugins-bad-free \
-        gstreamer1-plugin-libav \
-        gstreamer1-plugins-ugly-free \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        python3 \
-        python3-libs \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libdecor \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libtirpc \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libuuid \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libblkid \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libmount \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        cups-libs \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libinput \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libopenmpt \
-        || true && \
-    rpm-ostree override remove \
-        glibc32 \
-        || true
+    libstdc++ \
+    || true
 
 # Install fsync kernel
 RUN rpm-ostree cliwrap install-to-root / && \
-    rpm-ostree override remove \
-        --install kernel-cachyos \
+    rpm-ostree override replace \
+    --experimental \
+    #--from repo=copr:copr.fedorainfracloud.org:group_kernel-vanilla:mainline-wo-mergew \
+    --from repo=copr:copr.fedorainfracloud.org:sentry:kernel-fsync \
         kernel \
         kernel-core \
         kernel-modules \
         kernel-modules-core \
-        kernel-modules-extra
+        kernel-modules-extra \
+        kernel-uki-virt
+        # kernel-headers \
+        # kernel-devel 
 
 # Removals
 RUN rpm-ostree override remove \
@@ -169,10 +205,9 @@ RUN rpm-ostree override remove \
         power-profiles-daemon \
         || true
 
-RUN cpm enable -m trouter/bazzite-multilib && \
-    rpm-ostree override replace \
+RUN rpm-ostree override replace \
     --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:trouter:bazzite-multilib  \
+    --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib \
         mesa-filesystem \
         mesa-libxatracker \
         mesa-libglapi \
@@ -180,11 +215,7 @@ RUN cpm enable -m trouter/bazzite-multilib && \
         mesa-libgbm \
         mesa-libEGL \
         mesa-vulkan-drivers \
-        mesa-libGL && \
-    cpm enable -m kylegospo/bazzite-multilib && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib \
+        mesa-libGL \
         pipewire \
         pipewire-alsa \
         pipewire-gstreamer \
@@ -197,8 +228,16 @@ RUN cpm enable -m trouter/bazzite-multilib && \
         bluez-obexd \
         bluez-cups \
         bluez-libs && \
+    rpm-ostree install \
+        mesa-va-drivers-freeworld \
+        mesa-vdpau-drivers-freeworld.x86_64 \
+        libaacs \
+        libbdplus \
+        libbluray && \
     rpm-ostree override replace \
-        /tmp/rpms/override/*.rpm
+    --experimental \
+    --from repo=copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
+        switcheroo-control
 
 # Additions
 RUN rpm-ostree install \
@@ -219,7 +258,6 @@ RUN rpm-ostree install \
         google-noto-sans-javanese-fonts \
         google-noto-sans-sundanese-fonts \
         grub2-tools-extra \
-        heif-pixbuf-loader \
         htop \
         intel-media-driver \
         just \
@@ -241,8 +279,6 @@ RUN rpm-ostree install \
         pam_yubico \
         pamu2fcfg \
         pipewire-codec-aptx \
-        podman-docker \
-        podman-compose \
         smartmontools \
         solaar-udev \
         symlinks \
@@ -256,7 +292,6 @@ RUN rpm-ostree install \
         duperemove \
         edid-decode \
         glibc.i686 \
-        input-remapper \
         jetbrains-mono-fonts \
         jq \
         mesa-libGLU \
@@ -265,7 +300,6 @@ RUN rpm-ostree install \
         python3-pip \
         rsms-inter-fonts \
         setools \
-        system76-scheduler \
         tuned \
         tuned-gtk \
         tuned-ppd \
@@ -293,35 +327,25 @@ RUN rpm-ostree override replace \
         gnome-shell \
         mutter \
         mutter-common \
-        vte291 \
-        vte-profile && \
+        gnome-shell && \
     rpm-ostree install \
         ptyxis \
         nautilus-open-any-terminal \
         gnome-epub-thumbnailer \
         gnome-tweaks \
         gnome-shell-extension-blur-my-shell \
-        gnome-shell-extension-compiz-windows-effect \
-        gnome-shell-extension-compiz-alike-magic-lamp-effect \
         gnome-shell-extension-just-perfection \
-        gnome-shell-extension-hotedge \
-        gnome-shell-extension-system76-scheduler && \
+        gnome-shell-extension-hotedge && \
     rpm-ostree override remove \
         gnome-software-rpm-ostree \
         gnome-tour \
         gnome-extensions-app \
         gnome-classic-session \
         gnome-classic-session-xsession \
-        gnome-terminal-nautilus \
-        yelp && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
-        switcheroo-control
-    # TODO set up copr for patched and additional packages
+        gnome-terminal-nautilus
 
 # Gaming-specific changes
-RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
+RUN if [[ "${IMAGE_NAME}" == "quark" ]] || [[ "${IMAGE_NAME}" == "quark-nvidia" ]]; then \
     rpm-ostree install \
         jupiter-sd-mounting-btrfs \
         at-spi2-core.i686 \
@@ -348,8 +372,23 @@ RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
         libdbusmenu-gtk3.i686 \
         libatomic.i686 \
         pipewire-alsa.i686 \
-        clinfo \
+        clinfo && \
+    sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/fedora-updates.repo && \
+    rpm-ostree install \
+        mesa-vulkan-drivers.i686 \
+        mesa-va-drivers-freeworld.i686 \
+        mesa-vdpau-drivers-freeworld.i686 && \
+    sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree-steam.repo && \
+    sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree.repo && \
+    sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree-updates.repo && \
+    sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
+    rpm-ostree install \
         steam && \
+    sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree-steam.repo && \
+    sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree.repo && \
+    sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree-updates.repo && \
+    sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
+    sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/fedora-updates.repo && \
     rpm-ostree install \
         gamescope.x86_64 \
         gamescope-libs.i686 \
@@ -368,13 +407,31 @@ RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
 
     ; fi
 
+RUN if [[ "${IMAGE_NAME}" == "quark-nvidia" ]]; then \
+    curl -Lo /etc/yum.repos.d/fedora-nvidia.repo https://negativo17.org/repos/fedora-nvidia.repo && \
+    rpm-ostree install \
+        akmod-nvidia \
+        nvidia-driver \
+        nvidia-driver-libs.i686 \
+        nvidia-settings \
+        nvidia-driver-cuda \
+        libva-nvidia-driver \
+        mesa-vulkan-drivers.i686 && \
+    mkdir -p /var/cache/akmods && \
+    mkdir -p /var/log/akmods && \
+    akmods --force --kernels "$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" --kmod nvidia && \
+    rpm-ostree install \
+            /var/cache/akmods/nvidia/kmod-*.rpm \
+
+    ; fi
+
 # run post-install tasks and clean up
-RUN /tmp/image-info.sh && \
+RUN /usr/libexec/containerbuild/build-initramfs && \
+    /tmp/image-info.sh && \
     rm -f /usr/share/vulkan/icd.d/lvp_icd.*.json && \
     rm -f /usr/share/applications/htop.desktop && \
     rm -f /usr/share/applications/nvtop.desktop && \
     rm -f /usr/share/applications/shredder.desktop && \
-    cpm remove --all && \
     mkdir -p /usr/etc/flatpak/remotes.d && \
     wget -q https://dl.flathub.org/repo/flathub.flatpakrepo -P /usr/etc/flatpak/remotes.d && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/org.gnome.Terminal.desktop  && \
@@ -384,10 +441,8 @@ RUN /tmp/image-info.sh && \
     install -c -m 0755 /tmp/starship /usr/bin && \
     echo 'eval "$(starship init bash)"' >> /etc/bashrc && \
     echo 'eval "$(starship init zsh)"' >> /etc/zshrc && \
-    systemctl enable com.system76.Scheduler.service && \
     systemctl enable tuned.service && \
     systemctl enable btrfs-dedup@var-home.timer && \
-    systemctl enable input-remapper.service && \
     systemctl enable dconf-update.service && \
     systemctl unmask flatpak-manager.service && \
     systemctl enable flatpak-manager.service && \
@@ -403,7 +458,31 @@ RUN /tmp/image-info.sh && \
     ostree container commit && \
     mkdir -p /var/lib && mv /staged-alternatives /var/lib/alternatives && \
     mkdir -p /tmp /var/tmp && \
+    curl -Lo /usr/lib/sysctl.d/99-bore-scheduler.conf https://github.com/CachyOS/CachyOS-Settings/raw/master/usr/lib/sysctl.d/99-bore-scheduler.conf && \
     chmod -R 1777 /tmp /var/tmp
+
+
+# NVIDIA build
+FROM quark as quark-nvidia
+
+ARG IMAGE_NAME="${IMAGE_NAME:-quark-nvidia}"
+ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
+ARG IMAGE_FLAVOR="${IMAGE_FLAVOR}"
+ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
+ARG KERNEL_FLAVOR="${KERNEL_FLAVOR}"
+ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
+ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
+
+# RUN mkdir -p /var/cache/akmods && \
+#     mkdir -p /var/log/akmods && \
+#     akmods --force --kernels "$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" --kmod nvidia
+
+# RUN rpm-ostree install \
+#         /var/cache/akmods/nvidia/kmod-*.rpm
+
+RUN /usr/libexec/containerbuild/build-initramfs && \
+    rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json && \
+    ostree container commit
 
 
 # cloud development build
@@ -411,9 +490,10 @@ FROM quark as quark-cloud-dev
 
 ARG IMAGE_NAME="${IMAGE_NAME:-quark-cloud-dev}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
-ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME}"
 ARG IMAGE_FLAVOR="${IMAGE_FLAVOR}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
+ARG KERNEL_FLAVOR="${KERNEL_FLAVOR}"
+ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION}"
 
 # Install Openshift tools -- oc, opm, kubectl, operator-sdk, odo, helm, crc
@@ -454,38 +534,4 @@ RUN cpm remove --all && \
     rm -f /usr/bin/LICENSE && \
     rm -rf /tmp/* /var/* && \
     sed -i '/^PRETTY_NAME/s/Quark/Quark Cloud Dev/' /usr/lib/os-release && \
-    ostree container commit
-
-
-FROM ghcr.io/ublue-os/akmods-nvidia:main-${FEDORA_MAJOR_VERSION} as nvidia-akmods
-FROM quark as quark-nvidia
-
-ARG IMAGE_NAME="${IMAGE_NAME:-quark-nvidia}"
-ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
-ARG IMAGE_FLAVOR="${IMAGE_FLAVOR:-nvidia}"
-ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
-ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
-ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
-
-# Fetch NVIDIA driver
-COPY system_files/nvidia /
-
-# Install NVIDIA driver
-COPY --from=nvidia-akmods /rpms /tmp/akmods-rpms
-RUN sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-nonfree.repo && \
-    sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-nonfree-updates.repo && \
-    sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
-    curl -Lo /tmp/nvidia-install.sh https://raw.githubusercontent.com/ublue-os/hwe/main/nvidia-install.sh && \
-    chmod +x /tmp/nvidia-install.sh && \
-    IMAGE_NAME="${BASE_IMAGE_NAME}" RPMFUSION_MIRROR="" /tmp/nvidia-install.sh && \
-    ostree container commit
-
-# Cleanup & Finalize
-# RUN /usr/libexec/containerbuild/build-initramfs && \
-RUN /usr/libexec/containerbuild/image-info && \
-    rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json && \
-    # echo "import \"/usr/share/ublue-os/just/95-bazzite-nvidia.just\"" >> /usr/share/ublue-os/justfile && \
-    # sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-nonfree.repo && \
-    # sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-nonfree-updates.repo && \
-    # sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
     ostree container commit
