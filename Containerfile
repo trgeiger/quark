@@ -22,6 +22,9 @@ COPY tmp /tmp
 # COPY rpms /tmp/rpms
 COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
+RUN install -Dm644 tmp/private_key.priv /etc/pki/akmods/private/private_key.priv && \
+    install -Dm644 /etc/pki/akmods/certs/quark-secure-boot.der /etc/pki/akmods/certs/public_key.der
+
 # Add custom repos
 RUN mkdir -p /var/lib/alternatives && \
     wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
@@ -33,8 +36,6 @@ RUN mkdir -p /var/lib/alternatives && \
         sentry/kernel-fsync && \
     cpm enable -m \
         kylegospo/bazzite-multilib
-
-#RUN curl -Lo /etc/yum.repos.d/vanilla-kernel.repo https://copr.fedorainfracloud.org/coprs/g/kernel-vanilla/mainline-wo-mergew/repo/fedora-40/group_kernel-vanilla-mainline-wo-mergew-fedora-40.repo
 
 RUN wget -P /tmp/rpms/config \
         https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
@@ -428,6 +429,8 @@ RUN if [[ "${IMAGE_NAME}" == "quark-nvidia" ]]; then \
 # run post-install tasks and clean up
 RUN /usr/libexec/containerbuild/build-initramfs && \
     /tmp/image-info.sh && \
+    rm -f /etc/pki/akmods/private/private_key.priv && \
+    rm -f /etc/pki/akmods/certs/public_key.der && \
     rm -f /usr/share/vulkan/icd.d/lvp_icd.*.json && \
     rm -f /usr/share/applications/htop.desktop && \
     rm -f /usr/share/applications/nvtop.desktop && \

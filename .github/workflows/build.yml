@@ -111,6 +111,15 @@ jobs:
             org.opencontainers.image.version=${{ steps.labels.outputs.VERSION }}
             org.opencontainers.image.description=Personal Silverblue image
 
+      - name: Retrieve akmods signing key
+        run: |
+          mkdir -p certs
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              echo "Not using signing key"
+          else
+              echo "${{ secrets.QUARK_PRIVKEY_18012024 }}" > tmp/private_key.priv
+          fi
+
       # Build image using Buildah action
       - name: Build Image
         id: build_image
@@ -130,13 +139,14 @@ jobs:
           oci: false
           extra-args: |
             --target=${{ matrix.base_name }}
+          secrets: |
+            "akmods_privkey=${{ secrets.QUARK_PRIVKEY_18012024 }}"  
 
       - name: Sign kernel
         uses: EyeCantCU/kernel-signer@v0.2.1
         with:
           image: ${{ steps.build_image.outputs.image }}
           default-tag: ${{ env.DEFAULT_TAG }}
-          kernel_suffix: cachyos
           privkey: ${{ secrets.QUARK_PRIVKEY_18012024 }}
           pubkey: /etc/pki/akmods/certs/quark-secure-boot.der
           tags: ${{ steps.build_image.outputs.tags }}
