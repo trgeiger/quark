@@ -417,7 +417,8 @@ RUN if [[ "${IMAGE_NAME}" == "quark-nvidia" ]]; then \
         nvidia-settings \
         nvidia-driver-cuda \
         libva-nvidia-driver \
-        mesa-vulkan-drivers.i686 && \
+        mesa-vulkan-drivers.i686 \
+        intel-undervolt && \
     mkdir -p /var/cache/akmods && \
     mkdir -p /var/log/akmods && \
     akmods --force --kernels "$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" --kmod nvidia && \
