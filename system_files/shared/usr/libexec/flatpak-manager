@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Script Version
-VER=1
+VER=2
 VER_FILE="/etc/quark/flatpak/flatpak_manager_version"
 VER_RAN=$(cat $VER_FILE)
 
@@ -19,24 +19,37 @@ if grep -qz 'fedora' <<< $(flatpak remotes); then
 fi
 
 # Ensure Flathub is enabled
+flatpak remote-add --if-not-exists --system flathub /usr/etc/flatpak/remotes.d/flathub.flatpakrepo
 flatpak remote-modify --system --enable flathub
+
+# Flatpak theming support
+flatpak override \
+  --filesystem=xdg-config/gtk-4.0:ro \
+  --filesystem=xdg-config/gtk-3.0:ro \
+  --filesystem=xdg-data/icons:ro
+
+# XInput for Firefox
+flatpak override \
+  --system \
+  --env=MOZ_USE_XINPUT2=1 \
+  org.mozilla.firefox
 
 # Lists of flatpaks
 FLATPAK_LIST=$(flatpak list --columns=application)
 INSTALL_LIST=$(cat /usr/share/ublue-os/quark/flatpak/install)
 REMOVE_LIST=$(cat /usr/share/ublue-os/quark/flatpak/remove)
 
+# Remove flatpaks in list once
+if [[ ! -f $VER_FILE && -n $REMOVE_LIST ]]; then
+  flatpak --system remove -y ${REMOVE_LIST[@]}
+fi
+
 # Install flatpaks in list
 if [[ -n $INSTALL_LIST ]]; then
-  if ! flatpak install --system --noninteractive flathub ${INSTALL_LIST[@]}; then
+  if ! flatpak --system install -y --or-update ${INSTALL_LIST[@]}; then
     # exit on error
     exit 1
   fi
-fi
-
-# Remove flatpaks in list once
-if [[ ! -f $VER_FILE && -n $REMOVE_LIST ]]; then
-  flatpak remove --system --noninteractive ${REMOVE_LIST[@]}
 fi
 
 mkdir -p /etc/quark/flatpak
