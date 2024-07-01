@@ -33,7 +33,7 @@ RUN mkdir -p /var/lib/alternatives && \
         kylegospo/bazzite \
         che/nerd-fonts \
         sentry/switcheroo-control_discrete \
-        sentry/kernel-fsync && \
+        bieszczaders/kernel-cachyos && \
     cpm enable -m \
         kylegospo/bazzite-multilib
 
@@ -173,16 +173,14 @@ rpm-ostree override replace \
 
 # Install fsync kernel
 RUN rpm-ostree cliwrap install-to-root / && \
-    rpm-ostree override replace \
-    --experimental \
-    #--from repo=copr:copr.fedorainfracloud.org:group_kernel-vanilla:mainline-wo-mergew \
-    --from repo=copr:copr.fedorainfracloud.org:sentry:kernel-fsync \
+    rpm-ostree override remove \
         kernel \
         kernel-core \
         kernel-modules \
         kernel-modules-core \
         kernel-modules-extra \
-        kernel-uki-virt
+        --install \
+        kernel-cachyos
         # kernel-headers \
         # kernel-devel 
 
@@ -418,12 +416,19 @@ RUN if [[ "${IMAGE_NAME}" == "quark-nvidia" ]]; then \
         nvidia-driver-cuda \
         libva-nvidia-driver \
         mesa-vulkan-drivers.i686 \
+        kernel-cachyos-devel \
+        kernel-cachyos-headers \
+        kernel-cachyos-devel-matched \
         intel-undervolt && \
     mkdir -p /var/cache/akmods && \
     mkdir -p /var/log/akmods && \
     akmods --force --kernels "$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" --kmod nvidia && \
     rpm-ostree install \
-            /var/cache/akmods/nvidia/kmod-*.rpm \
+            /var/cache/akmods/nvidia/kmod-*.rpm && \
+    rpm-ostree remove \
+        kernel-cachyos-devel \
+        kernel-cachyos-headers \
+        kernel-cachyos-devel-matched \
 
     ; fi
 
