@@ -446,7 +446,6 @@ RUN /usr/libexec/containerbuild/build-initramfs && \
     echo 'eval "$(starship init bash)"' >> /etc/bashrc && \
     echo 'eval "$(starship init zsh)"' >> /etc/zshrc && \
     systemctl enable tuned.service && \
-    systemctl enable btrfs-dedup@var-home.timer && \
     systemctl enable dconf-update.service && \
     systemctl unmask flatpak-manager.service && \
     systemctl enable flatpak-manager.service && \
@@ -525,6 +524,7 @@ RUN echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft
 
 RUN rpm-ostree install \
         code \
+        make \
         qemu \
         libvirt \
         virt-manager && \
