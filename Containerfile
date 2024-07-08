@@ -301,6 +301,7 @@ RUN rpm-ostree install \
         python3-pip \
         rsms-inter-fonts \
         setools \
+        sysfsutils
         tuned \
         tuned-gtk \
         tuned-ppd \
