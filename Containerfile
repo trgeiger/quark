@@ -243,7 +243,6 @@ RUN rpm-ostree override replace \
 # Additions
 RUN rpm-ostree install \
         alsa-firmware \
-        android-udev-rules \
         apr \
         apr-util \
         adw-gtk3-theme \
@@ -301,7 +300,7 @@ RUN rpm-ostree install \
         python3-pip \
         rsms-inter-fonts \
         setools \
-        sysfsutils
+        sysfsutils \
         tuned \
         tuned-gtk \
         tuned-ppd \
@@ -312,15 +311,7 @@ RUN rpm-ostree install \
         vulkan-tools \
         wl-clipboard \
         xrandr \
-        zsh && \
-    pip install --prefix=/usr topgrade && \
-    rpm-ostree install \
-        ublue-update && \
-    sed -i '1s/^/[include]\npaths = ["\/etc\/ublue-os\/topgrade.toml"]\n\n/' /usr/share/ublue-update/topgrade-user.toml && \
-    sed -i 's/min_battery_percent.*/min_battery_percent = 20.0/' /usr/etc/ublue-update/ublue-update.toml && \
-    sed -i 's/max_cpu_load_percent.*/max_cpu_load_percent = 100.0/' /usr/etc/ublue-update/ublue-update.toml && \
-    sed -i 's/max_mem_percent.*/max_mem_percent = 90.0/' /usr/etc/ublue-update/ublue-update.toml && \
-    sed -i 's/dbus_notify.*/dbus_notify = false/' /usr/etc/ublue-update/ublue-update.toml
+        zsh
 
 # Gnome stuff
 RUN rpm-ostree override replace \
@@ -448,10 +439,9 @@ RUN /usr/libexec/containerbuild/build-initramfs && \
     echo 'eval "$(starship init zsh)"' >> /etc/zshrc && \
     systemctl enable tuned.service && \
     systemctl enable dconf-update.service && \
-    systemctl unmask flatpak-manager.service && \
-    systemctl enable flatpak-manager.service && \
+    # systemctl unmask flatpak-manager.service && \
+    # systemctl enable flatpak-manager.service && \
     systemctl disable rpm-ostreed-automatic.timer && \
-    systemctl enable ublue-update.timer && \
     systemctl --global enable podman.socket && \
     systemctl --global enable systemd-tmpfiles-setup.service && \
     echo "import \"/usr/share/ublue-os/just/80-quark.just\"" >> /usr/share/ublue-os/justfile && \
@@ -462,7 +452,6 @@ RUN /usr/libexec/containerbuild/build-initramfs && \
     ostree container commit && \
     mkdir -p /var/lib && mv /staged-alternatives /var/lib/alternatives && \
     mkdir -p /tmp /var/tmp && \
-    curl -Lo /usr/lib/sysctl.d/99-bore-scheduler.conf https://github.com/CachyOS/CachyOS-Settings/raw/master/usr/lib/sysctl.d/99-bore-scheduler.conf && \
     chmod -R 1777 /tmp /var/tmp
 
 
