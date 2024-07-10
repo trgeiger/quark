@@ -413,7 +413,8 @@ RUN if [[ "${IMAGE_NAME}" == "quark-nvidia" ]]; then \
         intel-undervolt && \
     mkdir -p /var/cache/akmods && \
     mkdir -p /var/log/akmods && \
-    akmods --force --kernels "$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" --kmod nvidia && \
+    sudo sh -c 'echo "%_with_kmod_nvidia_open 1" > /etc/rpm/macros.nvidia-kmod' && \
+    akmods --force --kernels "$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" --rebuild && \
     rpm-ostree install \
             /var/cache/akmods/nvidia/kmod-*.rpm \
 
