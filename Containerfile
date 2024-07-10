@@ -401,13 +401,13 @@ RUN if [[ "${IMAGE_NAME}" == "quark" ]] || [[ "${IMAGE_NAME}" == "quark-nvidia" 
     ; fi
 
 RUN if [[ "${IMAGE_NAME}" == "quark-nvidia" ]]; then \
-    curl -Lo /etc/yum.repos.d/fedora-nvidia.repo https://negativo17.org/repos/fedora-nvidia.repo && \
     rpm-ostree install \
         akmod-nvidia \
-        nvidia-driver \
-        nvidia-driver-libs.i686 \
-        nvidia-settings \
-        nvidia-driver-cuda \
+        xorg-x11-drv-nvidia-cuda \
+        xorg-x11-drv-nvidia-cuda-libs \
+        nvidia-vaapi-driver \
+        libva-utils \
+        vdpauinfo \
         libva-nvidia-driver \
         mesa-vulkan-drivers.i686 \
         intel-undervolt && \
