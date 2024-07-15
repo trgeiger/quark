@@ -19,15 +19,13 @@ ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
 
 COPY system_files/shared /
 COPY tmp /tmp
-# COPY rpms /tmp/rpms
 COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
 RUN install -Dm644 tmp/private_key.priv /etc/pki/akmods/private/private_key.priv && \
     install -Dm644 /etc/pki/akmods/certs/quark-secure-boot.der /etc/pki/akmods/certs/public_key.der
 
 # Add custom repos
-RUN mkdir -p /var/lib/alternatives && \
-    wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
+RUN wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
     cpm enable \
         ublue-os/staging \
         kylegospo/bazzite \
@@ -175,7 +173,6 @@ rpm-ostree override replace \
 RUN rpm-ostree cliwrap install-to-root / && \
     rpm-ostree override replace \
     --experimental \
-    #--from repo=copr:copr.fedorainfracloud.org:group_kernel-vanilla:mainline-wo-mergew \
     --from repo=copr:copr.fedorainfracloud.org:sentry:kernel-fsync \
         kernel \
         kernel-core \
@@ -183,8 +180,6 @@ RUN rpm-ostree cliwrap install-to-root / && \
         kernel-modules-core \
         kernel-modules-extra \
         kernel-uki-virt
-        # kernel-headers \
-        # kernel-devel 
 
 # Removals
 RUN rpm-ostree override remove \
@@ -440,20 +435,15 @@ RUN /usr/libexec/containerbuild/build-initramfs && \
     echo 'eval "$(starship init zsh)"' >> /etc/zshrc && \
     systemctl enable tuned.service && \
     systemctl enable dconf-update.service && \
-    # systemctl unmask flatpak-manager.service && \
-    # systemctl enable flatpak-manager.service && \
     systemctl disable rpm-ostreed-automatic.timer && \
     systemctl --global enable podman.socket && \
     systemctl --global enable systemd-tmpfiles-setup.service && \
     echo "import \"/usr/share/ublue-os/just/80-quark.just\"" >> /usr/share/ublue-os/justfile && \
     sed -i '/^PRETTY_NAME/s/Silverblue/Quark/' /usr/lib/os-release && \
-    mv /var/lib/alternatives /staged-alternatives && \
+    sed -i 's/^NAME=.*/NAME="Quark"/' /usr/lib/os-release && \
     fc-cache --system-only --really-force --verbose && \
-    rm -rf /tmp/* /var/* && \
+    curl -Lo /usr/lib/sysctl.d/99-bore-scheduler.conf https://github.com/CachyOS/CachyOS-Settings/raw/master/usr/lib/sysctl.d/99-bore-scheduler.conf && \
     ostree container commit && \
-    mkdir -p /var/lib && mv /staged-alternatives /var/lib/alternatives && \
-    mkdir -p /tmp /var/tmp && \
-    chmod -R 1777 /tmp /var/tmp
 
 
 # NVIDIA build
@@ -527,6 +517,6 @@ RUN cpm remove --all && \
     rm -f awscliv2.zip && \
     rm -f /usr/bin/README.md && \
     rm -f /usr/bin/LICENSE && \
-    rm -rf /tmp/* /var/* && \
     sed -i '/^PRETTY_NAME/s/Quark/Quark Cloud Dev/' /usr/lib/os-release && \
+    sed -i 's/^NAME=.*/NAME="Quark Cloud Dev"/' /usr/lib/os-release && \
     ostree container commit
