@@ -25,7 +25,8 @@ RUN install -Dm644 tmp/private_key.priv /etc/pki/akmods/private/private_key.priv
     install -Dm644 /etc/pki/akmods/certs/quark-secure-boot.der /etc/pki/akmods/certs/public_key.der
 
 # Add custom repos
-RUN wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
+RUN mkdir -p /var/lib/alternatives && \
+    wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
     cpm enable \
         ublue-os/staging \
         kylegospo/bazzite \
@@ -411,7 +412,9 @@ RUN if [[ "${IMAGE_NAME}" == "quark-nvidia" ]]; then \
     sudo sh -c 'echo "%_with_kmod_nvidia_open 1" > /etc/rpm/macros.nvidia-kmod' && \
     akmods --force --kernels "$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" --rebuild && \
     rpm-ostree install \
-            /var/cache/akmods/nvidia/kmod-*.rpm \
+        /var/cache/akmods/nvidia/*.rpm || \
+    rpm-ostree install \
+        /var/cache/akmods/nvidia-open/*.rpm \
 
     ; fi
 
@@ -441,9 +444,14 @@ RUN /usr/libexec/containerbuild/build-initramfs && \
     echo "import \"/usr/share/ublue-os/just/80-quark.just\"" >> /usr/share/ublue-os/justfile && \
     sed -i '/^PRETTY_NAME/s/Silverblue/Quark/' /usr/lib/os-release && \
     sed -i 's/^NAME=.*/NAME="Quark"/' /usr/lib/os-release && \
+    mv /var/lib/alternatives /staged-alternatives && \
     fc-cache --system-only --really-force --verbose && \
     curl -Lo /usr/lib/sysctl.d/99-bore-scheduler.conf https://github.com/CachyOS/CachyOS-Settings/raw/master/usr/lib/sysctl.d/99-bore-scheduler.conf && \
+    rm -rf /tmp/* /var/* && \
     ostree container commit && \
+    mkdir -p /var/lib && mv /staged-alternatives /var/lib/alternatives && \
+    mkdir -p /tmp /var/tmp && \
+    chmod -R 1777 /tmp /var/tmp 
 
 
 # NVIDIA build
