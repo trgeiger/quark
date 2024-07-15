@@ -1,0 +1,10 @@
+[Unit]
+Description=Force TAS2781 audio on Legion 9i
+After=suspend.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/tas2781-fix
+
+[Install]
+WantedBy=multi-user.target suspend.target

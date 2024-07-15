@@ -17,3 +17,9 @@ fix-proton-hang:
     for PROG in "${PROTONCORE[@]}"; do
     killall -9 "$PROG"
     done
+
+# Enable TAS2781 audio fix for Legion 9i
+fix-legion-audio
+    systemctl enable tas2781-fix.service
+    systemctl daemon-reload
+    systemctl start tas2781-fix.service
