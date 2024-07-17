@@ -32,7 +32,7 @@ RUN mkdir -p /var/lib/alternatives && \
         kylegospo/bazzite \
         che/nerd-fonts \
         sentry/switcheroo-control_discrete \
-        sentry/kernel-fsync && \
+        bieszczaders/kernel-cachyos && \
     cpm enable -m \
         kylegospo/bazzite-multilib
 
@@ -170,17 +170,18 @@ rpm-ostree override replace \
     libstdc++ \
     || true
 
-# Install fsync kernel
+# Install CachyOS kernel
 RUN rpm-ostree cliwrap install-to-root / && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:sentry:kernel-fsync \
-        kernel \
-        kernel-core \
-        kernel-modules \
-        kernel-modules-core \
-        kernel-modules-extra \
-        kernel-uki-virt
+    rpm-ostree override remove \
+            kernel \
+            kernel-core \
+            kernel-modules \
+            kernel-modules-core \
+            kernel-modules-extra \
+        --install \
+            kernel-cachyos \
+        --install \
+            kernel-cachyos-devel-matched
 
 # Removals
 RUN rpm-ostree override remove \
@@ -410,7 +411,7 @@ RUN if [[ "${IMAGE_NAME}" == "quark-nvidia" ]]; then \
     mkdir -p /var/cache/akmods && \
     mkdir -p /var/log/akmods && \
     sudo sh -c 'echo "%_with_kmod_nvidia_open 1" > /etc/rpm/macros.nvidia-kmod' && \
-    akmods --force --kernels "$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" --rebuild && \
+    akmods --force --kernels "$(rpm -q kernel-cachyos --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" --rebuild && \
     rpm-ostree install \
         /var/cache/akmods/nvidia/*.rpm || \
     rpm-ostree install \
@@ -446,7 +447,6 @@ RUN /usr/libexec/containerbuild/build-initramfs && \
     sed -i 's/^NAME=.*/NAME="Quark"/' /usr/lib/os-release && \
     mv /var/lib/alternatives /staged-alternatives && \
     fc-cache --system-only --really-force --verbose && \
-    curl -Lo /usr/lib/sysctl.d/99-bore-scheduler.conf https://github.com/CachyOS/CachyOS-Settings/raw/master/usr/lib/sysctl.d/99-bore-scheduler.conf && \
     rm -rf /tmp/* /var/* && \
     ostree container commit && \
     mkdir -p /var/lib && mv /staged-alternatives /var/lib/alternatives && \
