@@ -413,17 +413,15 @@ RUN if [[ "${IMAGE_NAME}" == "quark-nvidia" ]]; then \
     sudo sh -c 'echo "%_with_kmod_nvidia_open 1" > /etc/rpm/macros.nvidia-kmod' && \
     akmods --force --kernels "$(rpm -q kernel-cachyos --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" --rebuild && \
     rpm-ostree install \
-        /var/cache/akmods/nvidia/*.rpm || \
-    rpm-ostree install \
-        /var/cache/akmods/nvidia-open/*.rpm \
+        /var/cache/akmods/nvidia/*.rpm \
 
     ; fi
 
 # run post-install tasks and clean up
 RUN /usr/libexec/containerbuild/build-initramfs && \
     /tmp/image-info.sh && \
-    rm -f /etc/pki/akmods/private/private_key.priv && \
-    rm -f /etc/pki/akmods/certs/public_key.der && \
+    # rm -f /etc/pki/akmods/private/private_key.priv && \
+    # rm -f /etc/pki/akmods/certs/public_key.der && \
     rm -f /usr/share/vulkan/icd.d/lvp_icd.*.json && \
     rm -f /usr/share/applications/htop.desktop && \
     rm -f /usr/share/applications/nvtop.desktop && \
