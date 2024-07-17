@@ -352,7 +352,7 @@ RUN if [[ "${IMAGE_NAME}" == "quark" ]] || [[ "${IMAGE_NAME}" == "quark-nvidia" 
         libXinerama.i686 \
         libXtst.i686 \
         libXScrnSaver.i686 \
-        NetworkManager-libnm.i686 \
+        # NetworkManager-libnm.i686 \
         nss.i686 \
         pulseaudio-libs.i686 \
         libcurl.i686 \
