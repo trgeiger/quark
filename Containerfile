@@ -32,6 +32,7 @@ RUN mkdir -p /var/lib/alternatives && \
         kylegospo/bazzite \
         che/nerd-fonts \
         sentry/switcheroo-control_discrete \
+        bieszczaders/kernel-cachyos-addons \
         bieszczaders/kernel-cachyos && \
     cpm enable -m \
         kylegospo/bazzite-multilib
@@ -236,6 +237,18 @@ RUN rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
         switcheroo-control
+    
+# CachyOS addons
+RUN rpm-ostree override replace \
+    --experimental \
+    --from repo=copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos-addons \
+        libbpf && \
+    rpm-ostree override remove \
+        zram-generator-defaults \
+    --install \
+        cachyos-settings \
+    --install \
+        sched-ext-scx
 
 # Additions
 RUN rpm-ostree install \
@@ -243,6 +256,7 @@ RUN rpm-ostree install \
         apr \
         apr-util \
         adw-gtk3-theme \
+        cachyos-settings \
         cascadia-code-fonts \
         distrobox \
         fastfetch \
