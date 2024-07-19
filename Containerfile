@@ -366,7 +366,7 @@ RUN if [[ "${IMAGE_NAME}" == "quark" ]] || [[ "${IMAGE_NAME}" == "quark-nvidia" 
         libXinerama.i686 \
         libXtst.i686 \
         libXScrnSaver.i686 \
-        # NetworkManager-libnm.i686 \
+        NetworkManager-libnm.i686 \
         nss.i686 \
         pulseaudio-libs.i686 \
         libcurl.i686 \
@@ -434,8 +434,8 @@ RUN if [[ "${IMAGE_NAME}" == "quark-nvidia" ]]; then \
 # run post-install tasks and clean up
 RUN /usr/libexec/containerbuild/build-initramfs && \
     /tmp/image-info.sh && \
-    # rm -f /etc/pki/akmods/private/private_key.priv && \
-    # rm -f /etc/pki/akmods/certs/public_key.der && \
+    rm -f /etc/pki/akmods/private/private_key.priv && \
+    rm -f /etc/pki/akmods/certs/public_key.der && \
     rm -f /usr/share/vulkan/icd.d/lvp_icd.*.json && \
     rm -f /usr/share/applications/htop.desktop && \
     rm -f /usr/share/applications/nvtop.desktop && \
