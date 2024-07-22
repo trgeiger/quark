@@ -32,8 +32,8 @@ RUN mkdir -p /var/lib/alternatives && \
         kylegospo/bazzite \
         che/nerd-fonts \
         sentry/switcheroo-control_discrete \
-        bieszczaders/kernel-cachyos-addons \
-        bieszczaders/kernel-cachyos && \
+        bieszczaders/kernel-cachyos-addons && \
+        # bieszczaders/kernel-cachyos && \
     cpm enable -m \
         kylegospo/bazzite-multilib
 
@@ -259,6 +259,7 @@ RUN rpm-ostree install \
         adw-gtk3-theme \
         cascadia-code-fonts \
         distrobox \
+        drm_info \
         fastfetch \
         ffmpeg \
         ffmpeg-libs \
