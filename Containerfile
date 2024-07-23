@@ -32,8 +32,8 @@ RUN mkdir -p /var/lib/alternatives && \
         kylegospo/bazzite \
         che/nerd-fonts \
         sentry/switcheroo-control_discrete \
-        bieszczaders/kernel-cachyos-addons && \
-        # bieszczaders/kernel-cachyos && \
+        bieszczaders/kernel-cachyos-addons \
+        bieszczaders/kernel-cachyos && \
     cpm enable -m \
         kylegospo/bazzite-multilib
 
@@ -154,16 +154,22 @@ rpm-ostree override replace \
 --experimental \
 --from repo=updates \
     libxml2 \
-    || true $$ \
+    || true && \
 rpm-ostree override remove \
     glibc32 \
     || true && \
 rpm-ostree override replace \
     --experimental \
     --from repo=updates \
-    cpp \
-    libgcc \
-    libgomp \
+    # cpp \
+    glibc \
+    glibc-common \
+    glibc-gconv-extra \
+    glibc-all-langpacks \
+    gcc \
+    glibc-devel \
+    # libgcc \
+    # libgomp \
     || true && \
 rpm-ostree override replace \
     --experimental \
