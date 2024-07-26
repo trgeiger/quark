@@ -169,6 +169,11 @@ rpm-ostree override replace \
     --experimental \
     --from repo=updates \
     libstdc++ \
+    || true && \
+rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+    libdrm \
     || true
 
 # Install CachyOS kernel
@@ -243,12 +248,8 @@ RUN rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos-addons \
         libbpf && \
-    rpm-ostree override remove \
-        zram-generator-defaults \
-    --install \
-        cachyos-settings \
-    --install \
-        sched-ext-scx
+    rpm-ostree install \
+        scx-scheds
 
 # Additions
 RUN rpm-ostree install \
@@ -256,7 +257,6 @@ RUN rpm-ostree install \
         apr \
         apr-util \
         adw-gtk3-theme \
-        cachyos-settings \
         cascadia-code-fonts \
         distrobox \
         fastfetch \
