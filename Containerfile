@@ -402,8 +402,6 @@ RUN if [[ "${IMAGE_NAME}" == "quark" ]] || [[ "${IMAGE_NAME}" == "quark-nvidia" 
         mangohud.x86_64 \
         mangohud.i686 \
         protontricks && \
-    rpm-ostree override remove \
-        gamemode && \
     systemctl enable gamescope-workaround.service && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/yad-icon-browser.desktop && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/winetricks.desktop && \
