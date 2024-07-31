@@ -301,7 +301,6 @@ RUN rpm-ostree install \
         zstd \
         bootc \
         duperemove \
-        easyeffects \
         edid-decode \
         glibc.i686 \
         jetbrains-mono-fonts \
