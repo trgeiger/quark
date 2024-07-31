@@ -15,11 +15,11 @@ fix-proton-hang:
     #!/usr/bin/bash
     PROTONCORE=(pv-bwrap pressure-vessel reaper explorer.exe rpcss.exe plugplay.exe services.exe svchost.exe winedevice.exe winedevice.exe wineserver gamescope gamescope-wl)
     for PROG in "${PROTONCORE[@]}"; do
-    killall -9 "$PROG"
+        killall -9 "$PROG"
     done
 
 # Enable TAS2781 audio fix for Legion 9i
-fix-legion-audio
+fix-legion-audio:
     systemctl enable tas2781-fix.service
     systemctl daemon-reload
     systemctl start tas2781-fix.service
