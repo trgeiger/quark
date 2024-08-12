@@ -154,22 +154,16 @@ rpm-ostree override replace \
 --experimental \
 --from repo=updates \
     libxml2 \
-    || true && \
+    || true $$ \
 rpm-ostree override remove \
     glibc32 \
     || true && \
 rpm-ostree override replace \
     --experimental \
     --from repo=updates \
-    # cpp \
-    glibc \
-    glibc-common \
-    glibc-gconv-extra \
-    glibc-all-langpacks \
-    gcc \
-    glibc-devel \
-    # libgcc \
-    # libgomp \
+    cpp \
+    libgcc \
+    libgomp \
     || true && \
 rpm-ostree override replace \
     --experimental \
@@ -265,7 +259,6 @@ RUN rpm-ostree install \
         adw-gtk3-theme \
         cascadia-code-fonts \
         distrobox \
-        drm_info \
         fastfetch \
         ffmpeg \
         ffmpeg-libs \
