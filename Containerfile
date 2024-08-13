@@ -47,140 +47,139 @@ RUN wget -P /tmp/rpms/config \
 
 # Update packages that commonly cause build issues
 RUN rpm-ostree override replace \
---experimental \
---from repo=updates \
-    vulkan-loader \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    alsa-lib \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    gnutls \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    glib2 \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    gtk3 \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    atk \
-    at-spi2-atk \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    libaom \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    gstreamer1 \
-    gstreamer1-plugins-base \
-    gstreamer1-plugins-bad-free-libs \
-    gstreamer1-plugins-good-qt \
-    gstreamer1-plugins-good \
-    gstreamer1-plugins-bad-free \
-    gstreamer1-plugin-libav \
-    gstreamer1-plugins-ugly-free \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    python3 \
-    python3-libs \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    libdecor \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    libtirpc \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    libuuid \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    libblkid \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    libmount \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    cups-libs \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    libinput \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    libopenmpt \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    llvm-libs \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    fontconfig \
-    || true && \
-rpm-ostree override replace \
---experimental \
---from repo=updates \
-    libxml2 \
-    || true && \
-rpm-ostree override remove \
-    glibc32 \
-    || true && \
-rpm-ostree override replace \
     --experimental \
     --from repo=updates \
-    # cpp \
-    glibc \
-    glibc-common \
-    glibc-gconv-extra \
-    glibc-all-langpacks \
-    gcc \
-    glibc-devel \
-    # libgcc \
-    # libgomp \
-    || true && \
-rpm-ostree override replace \
+        vulkan-loader \
+        || true && \
+    rpm-ostree override replace \
     --experimental \
     --from repo=updates \
-    libstdc++ \
-    || true && \
-rpm-ostree override replace \
+        alsa-lib \
+        || true && \
+    rpm-ostree override replace \
     --experimental \
     --from repo=updates \
-    libdrm \
-    || true
+        gnutls \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        glib2 \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        nspr \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        nss-softokn \
+        nss-softokn-freebl \
+        nss-util \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        atk \
+        at-spi2-atk \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        libaom \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        gstreamer1 \
+        gstreamer1-plugins-base \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        libdecor \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        libtirpc \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        libuuid \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        libblkid \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        libmount \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        cups-libs \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        libinput \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        libopenmpt \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        llvm-libs \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        zlib-ng-compat \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        fontconfig \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        pciutils-libs \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        libdrm \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        libX11 \
+        libX11-common \
+        libX11-xcb \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        libv4l \
+        || true && \
+    rpm-ostree override remove \
+        glibc32 \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        libedit \
+        || true
 
 # Install CachyOS kernel
 RUN rpm-ostree cliwrap install-to-root / && \
@@ -191,9 +190,11 @@ RUN rpm-ostree cliwrap install-to-root / && \
             kernel-modules-core \
             kernel-modules-extra \
         --install \
-            kernel-cachyos \
+            kernel-cachyos-6.10.3-cb1.0.fc40.x86_64.rpm \
+            # kernel-cachyos \
         --install \
-            kernel-cachyos-devel-matched
+            kernel-cachyos-devel-matched-6.10.3-cb1.0.fc40.x86_64.rpm
+            # kernel-cachyos-devel-matched
 
 # Removals
 RUN rpm-ostree override remove \
@@ -237,7 +238,8 @@ RUN rpm-ostree override replace \
         bluez \
         bluez-obexd \
         bluez-cups \
-        bluez-libs && \
+        bluez-libs \
+        xorg-x11-server-Xwayland && \
     rpm-ostree install \
         mesa-va-drivers-freeworld \
         mesa-vdpau-drivers-freeworld.x86_64 \
@@ -356,7 +358,7 @@ RUN rpm-ostree override replace \
         gnome-terminal-nautilus
 
 # Gaming-specific changes
-RUN if [[ "${IMAGE_NAME}" == "quark" ]] || [[ "${IMAGE_NAME}" == "quark-nvidia" ]]; then \
+RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
     rpm-ostree install \
         jupiter-sd-mounting-btrfs \
         at-spi2-core.i686 \
@@ -412,11 +414,7 @@ RUN if [[ "${IMAGE_NAME}" == "quark" ]] || [[ "${IMAGE_NAME}" == "quark-nvidia" 
     systemctl enable gamescope-workaround.service && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/yad-icon-browser.desktop && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/winetricks.desktop && \
-    sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/protontricks.desktop \
-
-    ; fi
-
-RUN if [[ "${IMAGE_NAME}" == "quark-nvidia" ]]; then \
+    sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/protontricks.desktop && \
     rpm-ostree install \
         akmod-nvidia \
         xorg-x11-drv-nvidia-cuda \
@@ -429,11 +427,10 @@ RUN if [[ "${IMAGE_NAME}" == "quark-nvidia" ]]; then \
         intel-undervolt && \
     mkdir -p /var/cache/akmods && \
     mkdir -p /var/log/akmods && \
-    sudo sh -c 'echo "%_with_kmod_nvidia_open 1" > /etc/rpm/macros.nvidia-kmod' && \
     akmods --force --kernels "$(rpm -q kernel-cachyos --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" --rebuild && \
     rpm-ostree install \
-        /var/cache/akmods/nvidia/*.rpm \
-
+        /var/cache/akmods/nvidia/*.rpm && \
+    rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json \
     ; fi
 
 # run post-install tasks and clean up
@@ -469,29 +466,6 @@ RUN /usr/libexec/containerbuild/build-initramfs && \
     mkdir -p /var/lib && mv /staged-alternatives /var/lib/alternatives && \
     mkdir -p /tmp /var/tmp && \
     chmod -R 1777 /tmp /var/tmp 
-
-
-# NVIDIA build
-FROM quark as quark-nvidia
-
-ARG IMAGE_NAME="${IMAGE_NAME:-quark-nvidia}"
-ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
-ARG IMAGE_FLAVOR="${IMAGE_FLAVOR}"
-ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
-ARG KERNEL_FLAVOR="${KERNEL_FLAVOR}"
-ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
-ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
-
-# RUN mkdir -p /var/cache/akmods && \
-#     mkdir -p /var/log/akmods && \
-#     akmods --force --kernels "$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" --kmod nvidia
-
-# RUN rpm-ostree install \
-#         /var/cache/akmods/nvidia/kmod-*.rpm
-
-RUN /usr/libexec/containerbuild/build-initramfs && \
-    rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json && \
-    ostree container commit
 
 
 # cloud development build
