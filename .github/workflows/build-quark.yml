@@ -6,10 +6,14 @@ on:
     branches:
       - main
       - testing
+    paths-ignore:
+      - '**.md'
   push:
     branches:
       - main
       - testing
+    paths-ignore:
+      - '**.md'
 env:
     IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
 
