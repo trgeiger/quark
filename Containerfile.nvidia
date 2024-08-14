@@ -36,7 +36,12 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         libva-nvidia-driver \
         mesa-vulkan-drivers.i686 \
         /tmp/akmods-rpms/kmods/kmod-nvidia-*.rpm && \
-    rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json && \
+    KERNEL_VERSION="$(rpm -q kernel-cachyos --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" && \
+    modinfo -l /usr/lib/modules/${KERNEL_VERSION}/extra/nvidia/nvidia{,-drm,-modeset,-peermem,-uvm}.ko.xz && \
+    rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json
+
+RUN rm -f /etc/pki/akmods/private/private_key.priv && \
+    rm -f /etc/pki/akmods/certs/public_key.der && \
     /usr/libexec/containerbuild/build-initramfs && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit

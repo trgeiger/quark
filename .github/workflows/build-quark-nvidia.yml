@@ -136,6 +136,7 @@ jobs:
             IMAGE_VENDOR=${{ github.repository_owner }}
             FEDORA_MAJOR_VERSION=${{ matrix.major_version }}
             NVIDIA_VERSION=${{ matrix.nvidia_version }}
+            NVIDIA_MODULE_TYPE=${{ env.NVIDIA_MODULE_TYPE }}
           labels: ${{ steps.meta.outputs.labels }}
           oci: false
           extra-args: |
