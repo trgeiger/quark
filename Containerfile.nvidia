@@ -1,0 +1,42 @@
+ARG BASE_IMAGE="ghcr.io/trgeiger/quark"
+ARG IMAGE_NAME="${IMAGE_NAME:-quark-open}"
+ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
+ARG NVIDIA_MODULE_TYPE="${NVIDIA_MODULE_TYPE:-nvidia-open}"
+ARG NVIDIA_VERSION="${NVIDIA_VERSION:-stable}"
+
+FROM ghcr.io/trgeiger/nvidia-kmod-${NVIDIA_MODULE_TYPE}:${FEDORA_MAJOR_VERSION}-${NVIDIA_VERSION} AS nvidia-akmods
+
+FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS quark
+
+ARG IMAGE_NAME="${IMAGE_NAME:-quark}"
+ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
+ARG IMAGE_FLAVOR="${IMAGE_FLAVOR}"
+ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
+ARG KERNEL_FLAVOR="${KERNEL_FLAVOR}"
+ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
+ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
+ARG NVIDIA_VERSION="${NVIDIA_VERSION:-stable}"
+
+COPY tmp /tmp
+
+RUN install -Dm644 tmp/private_key.priv /etc/pki/akmods/private/private_key.priv && \
+    install -Dm644 /etc/pki/akmods/certs/quark-secure-boot.der /etc/pki/akmods/certs/public_key.der
+
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    --mount=type=bind,from=nvidia-akmods,src=/rpms,dst=/tmp/akmods-rpms \
+    if [[ "${NVIDIA_VERSION}" == "beta" ]]; then \
+        sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/tayler.repo \
+    ; fi  && \
+    rpm-ostree install \
+        xorg-x11-drv-nvidia-cuda \
+        xorg-x11-drv-nvidia-cuda-libs \
+        nvidia-vaapi-driver \
+        libva-utils \
+        vdpauinfo \
+        libva-nvidia-driver \
+        mesa-vulkan-drivers.i686 \
+        /tmp/akmods-rpms/kmods/kmod-nvidia-*.rpm && \
+    rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json && \
+    /usr/libexec/containerbuild/build-initramfs && \
+    /usr/libexec/containerbuild/cleanup.sh && \
+    ostree container commit

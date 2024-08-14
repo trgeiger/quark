@@ -1,10 +1,8 @@
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
 ARG IMAGE_FLAVOR="${IMAGE_FLAVOR:-main}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
-# ARG SOURCE_IMAGE="${SOURCE_IMAGE:-$BASE_IMAGE_NAME-$IMAGE_FLAVOR}"
 ARG SOURCE_IMAGE="${SOURCE_IMAGE:-$BASE_IMAGE_NAME}"
 ARG BASE_IMAGE="quay.io/fedora-ostree-desktops/${SOURCE_IMAGE}"
-# ARG BASE_IMAGE="ghcr.io/ublue-os/${SOURCE_IMAGE}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS quark
@@ -18,14 +16,11 @@ ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
 
 COPY system_files/shared /
-COPY tmp /tmp
 COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
-RUN install -Dm644 tmp/private_key.priv /etc/pki/akmods/private/private_key.priv && \
-    install -Dm644 /etc/pki/akmods/certs/quark-secure-boot.der /etc/pki/akmods/certs/public_key.der
-
 # Add custom repos
-RUN mkdir -p /var/lib/alternatives && \
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    mkdir -p /var/lib/alternatives && \
     wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
     cpm enable \
         ublue-os/staging \
@@ -35,18 +30,24 @@ RUN mkdir -p /var/lib/alternatives && \
         bieszczaders/kernel-cachyos-addons \
         bieszczaders/kernel-cachyos && \
     cpm enable -m \
-        kylegospo/bazzite-multilib
+        kylegospo/bazzite-multilib && \
+    /usr/libexec/containerbuild/cleanup.sh && \
+    ostree container commit
 
-RUN wget -P /tmp/rpms/config \
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    wget -P /tmp/rpms/config \
         https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
         https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm && \
     rm -f /tmp/rpms/config/ublue-os-update-services*.rpm && \
     rpm-ostree install \
         /tmp/rpms/config/*.rpm \
-        fedora-repos-archive
+        fedora-repos-archive && \
+    /usr/libexec/containerbuild/cleanup.sh && \
+    ostree container commit
 
 # Update packages that commonly cause build issues
-RUN rpm-ostree override replace \
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    rpm-ostree override replace \
     --experimental \
     --from repo=updates \
         vulkan-loader \
@@ -179,10 +180,13 @@ RUN rpm-ostree override replace \
     --experimental \
     --from repo=updates \
         libedit \
-        || true
+        || true && \
+    /usr/libexec/containerbuild/cleanup.sh && \
+    ostree container commit
 
 # Install CachyOS kernel
-RUN rpm-ostree cliwrap install-to-root / && \
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    rpm-ostree cliwrap install-to-root / && \
     rpm-ostree override remove \
             kernel \
             kernel-core \
@@ -190,14 +194,15 @@ RUN rpm-ostree cliwrap install-to-root / && \
             kernel-modules-core \
             kernel-modules-extra \
         --install \
-            kernel-cachyos-6.10.3-cb1.0.fc40.x86_64.rpm \
-            # kernel-cachyos \
+            kernel-cachyos \
         --install \
-            kernel-cachyos-devel-matched-6.10.3-cb1.0.fc40.x86_64.rpm
-            # kernel-cachyos-devel-matched
+            kernel-cachyos-devel-matched && \
+    /usr/libexec/containerbuild/cleanup.sh && \
+    ostree container commit
 
 # Removals
-RUN rpm-ostree override remove \
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    rpm-ostree override remove \
         ffmpeg-free \
         google-noto-sans-cjk-vf-fonts \
         libavcodec-free \
@@ -214,9 +219,12 @@ RUN rpm-ostree override remove \
         firefox-langpacks && \
     rpm-ostree override remove \
         power-profiles-daemon \
-        || true
+        || true && \
+    /usr/libexec/containerbuild/cleanup.sh && \
+    ostree container commit
 
-RUN rpm-ostree override replace \
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib \
         mesa-filesystem \
@@ -249,18 +257,24 @@ RUN rpm-ostree override replace \
     rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
-        switcheroo-control
+        switcheroo-control && \
+    /usr/libexec/containerbuild/cleanup.sh && \
+    ostree container commit
     
 # CachyOS addons
-RUN rpm-ostree override replace \
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos-addons \
         libbpf && \
     rpm-ostree install \
-        scx-scheds
+        scx-scheds && \
+    /usr/libexec/containerbuild/cleanup.sh && \
+    ostree container commit
 
 # Additions
-RUN rpm-ostree install \
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    rpm-ostree install \
         alsa-firmware \
         apr \
         apr-util \
@@ -331,10 +345,13 @@ RUN rpm-ostree install \
         vulkan-tools \
         wl-clipboard \
         xrandr \
-        zsh
+        zsh && \
+    /usr/libexec/containerbuild/cleanup.sh && \
+    ostree container commit
 
 # Gnome stuff
-RUN rpm-ostree override replace \
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:ublue-os:staging \
         gnome-shell \
@@ -355,10 +372,14 @@ RUN rpm-ostree override replace \
         gnome-extensions-app \
         gnome-classic-session \
         gnome-classic-session-xsession \
-        gnome-terminal-nautilus
+        gnome-terminal-nautilus && \ 
+    /usr/libexec/containerbuild/cleanup.sh && \
+    ostree container commit
 
 # Gaming-specific changes
-RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    # --mount=type=bind,from=nvidia-akmods,src=/rpms,dst=/tmp/akmods-rpms \
+    if [[ "${IMAGE_NAME}" == "quark" ]]; then \
     rpm-ostree install \
         jupiter-sd-mounting-btrfs \
         at-spi2-core.i686 \
@@ -405,37 +426,34 @@ RUN if [[ "${IMAGE_NAME}" == "quark" ]]; then \
     rpm-ostree install \
         gamescope.x86_64 \
         gamescope-libs.i686 \
-        gamescope-shaders \
+        gamescope-shaders \ 
         vkBasalt.x86_64 \
         vkBasalt.i686 \
         mangohud.x86_64 \
         mangohud.i686 \
-        protontricks && \
+        protontricks \
+        intel-undervolt && \
     systemctl enable gamescope-workaround.service && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/yad-icon-browser.desktop && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/winetricks.desktop && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/protontricks.desktop && \
-    rpm-ostree install \
-        akmod-nvidia \
-        xorg-x11-drv-nvidia-cuda \
-        xorg-x11-drv-nvidia-cuda-libs \
-        nvidia-vaapi-driver \
-        libva-utils \
-        vdpauinfo \
-        libva-nvidia-driver \
-        mesa-vulkan-drivers.i686 \
-        intel-undervolt && \
-    mkdir -p /var/cache/akmods && \
-    mkdir -p /var/log/akmods && \
-    akmods --force --kernels "$(rpm -q kernel-cachyos --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" --rebuild && \
-    rpm-ostree install \
-        /var/cache/akmods/nvidia/*.rpm && \
-    rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json \
+    # rpm-ostree install \
+    #     xorg-x11-drv-nvidia-cuda \
+    #     xorg-x11-drv-nvidia-cuda-libs \
+    #     nvidia-vaapi-driver \
+    #     libva-utils \
+    #     vdpauinfo \
+    #     libva-nvidia-driver \
+    #     mesa-vulkan-drivers.i686 \
+    #     /tmp/akmods-rpms/kmods/kmod-nvidia-*.rpm && \
+    # rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json && \
+    /usr/libexec/containerbuild/cleanup.sh && \
+    ostree container commit \
     ; fi
 
 # run post-install tasks and clean up
-RUN /usr/libexec/containerbuild/build-initramfs && \
-    /tmp/image-info.sh && \
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    mkdir -p /var/tmp && chmod 1777 /var/tmp && \
     rm -f /etc/pki/akmods/private/private_key.priv && \
     rm -f /etc/pki/akmods/certs/public_key.der && \
     rm -f /usr/share/vulkan/icd.d/lvp_icd.*.json && \
@@ -459,13 +477,12 @@ RUN /usr/libexec/containerbuild/build-initramfs && \
     echo "import \"/usr/share/ublue-os/just/80-quark.just\"" >> /usr/share/ublue-os/justfile && \
     sed -i '/^PRETTY_NAME/s/Silverblue/Quark/' /usr/lib/os-release && \
     sed -i 's/^NAME=.*/NAME="Quark"/' /usr/lib/os-release && \
-    mv /var/lib/alternatives /staged-alternatives && \
     fc-cache --system-only --really-force --verbose && \
-    rm -rf /tmp/* /var/* && \
-    ostree container commit && \
-    mkdir -p /var/lib && mv /staged-alternatives /var/lib/alternatives && \
-    mkdir -p /tmp /var/tmp && \
-    chmod -R 1777 /tmp /var/tmp 
+    /usr/libexec/containerbuild/image-info && \
+    /usr/libexec/containerbuild/build-initramfs && \
+    /usr/libexec/containerbuild/cleanup.sh && \
+    mkdir -p /var/tmp && chmod 1777 /var/tmp && \
+    ostree container commit
 
 
 # cloud development build
@@ -480,14 +497,15 @@ ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION}"
 
 # Install Openshift tools -- oc, opm, kubectl, operator-sdk, odo, helm, crc
-RUN export VER=$(curl --silent -qI https://github.com/operator-framework/operator-sdk/releases/latest | awk -F '/' '/^location/ {print  substr($NF, 1, length($NF)-1)}') && \
-  wget https://github.com/operator-framework/operator-sdk/releases/download/$VER/operator-sdk_linux_amd64 -O /usr/bin/operator-sdk && \
-  chmod +x /usr/bin/operator-sdk
-RUN curl -SL https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz | tar xvzf - -C /usr/bin
-RUN curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/opm-linux.tar.gz | tar xvzf - -C /usr/bin
-RUN curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/helm/latest/helm-linux-amd64 -o /usr/bin/helm && chmod +x /usr/bin/helm
-RUN curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/odo/latest/odo-linux-amd64 -o /usr/bin/odo && chmod +x /usr/bin/odo
-RUN curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/crc/latest/crc-linux-amd64.tar.xz | tar xfJ - --strip-components 1 -C /usr/bin
+RUN export VER=$(curl --silent -qI https://github.com/operator-framework/operator-sdk/releases/latest | \
+    awk -F '/' '/^location/ {print  substr($NF, 1, length($NF)-1)}') && \
+    wget https://github.com/operator-framework/operator-sdk/releases/download/$VER/operator-sdk_linux_amd64 -O /usr/bin/operator-sdk && \
+    chmod +x /usr/bin/operator-sdk && \
+    curl -SL https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz | tar xvzf - -C /usr/bin && \
+    curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/opm-linux.tar.gz | tar xvzf - -C /usr/bin && \
+    curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/helm/latest/helm-linux-amd64 -o /usr/bin/helm && chmod +x /usr/bin/helm && \
+    curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/odo/latest/odo-linux-amd64 -o /usr/bin/odo && chmod +x /usr/bin/odo && \
+    curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/crc/latest/crc-linux-amd64.tar.xz | tar xfJ - --strip-components 1 -C /usr/bin
 
 # Install Kind
 RUN curl -Lo ./kind "https://github.com/kubernetes-sigs/kind/releases/latest/download/kind-$(uname)-amd64" && \
@@ -502,7 +520,8 @@ RUN curl -SL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv
 # VSCode repo
 RUN echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo && rpm --import https://packages.microsoft.com/keys/microsoft.asc
 
-RUN rpm-ostree install \
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    rpm-ostree install \
         code \
         make \
         qemu \

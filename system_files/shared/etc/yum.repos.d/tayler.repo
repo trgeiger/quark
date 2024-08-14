@@ -1,5 +1,5 @@
 [tayler]
 name=Personal
 baseurl=https://filedn.com/ldJMkp18B3QJKvJJaukrBzH/repo/fedora/releases/$releasever/$basearch
-enabled=1
+enabled=0
 gpgcheck=0
