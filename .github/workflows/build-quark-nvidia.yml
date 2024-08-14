@@ -62,15 +62,14 @@ jobs:
           COMMIT_TAGS+=("${SHA_SHORT}-${FEDORA_VERSION}-${{ matrix.nvidia_version }}")
 
           if [[ ${{ github.ref_name }} == "testing" ]]; then
-             BUILD_TAGS=("${FEDORA_VERSION}-testing" "${FEDORA_VERSION}-testing-${TIMESTAMP}")
+             BUILD_TAGS=("${FEDORA_VERSION}-${{ matrix.nvidia_version }}-testing" "${FEDORA_VERSION}-${{ matrix.nvidia_version }}-testing-${TIMESTAMP}")
              if [[ "${{ matrix.is_latest_version }}" == "true" ]] && \
                 [[ "${{ matrix.is_stable_version }}" == "true" ]]; then
                  BUILD_TAGS+=("testing-${{ matrix.nvidia_version }}")
                  echo "DEFAULT_TAG=testing-${{ matrix.nvidia_version }}" >> $GITHUB_ENV
              fi
           else
-             BUILD_TAGS=("${FEDORA_VERSION}" "${FEDORA_VERSION}-${TIMESTAMP}")
-             BUILD_TAGS+=("${FEDORA_VERSION}-stable" "${FEDORA_VERSION}-stable-${TIMESTAMP}")
+             BUILD_TAGS=("${FEDORA_VERSION}-${{ matrix.nvidia_version }}" "${FEDORA_VERSION}-${{ matrix.nvidia_version }}-${TIMESTAMP}")
              if [[ "${{ matrix.is_latest_version }}" == "true" ]] && \
                 [[ "${{ matrix.is_stable_version }}" == "true" ]]; then
                  BUILD_TAGS+=("latest-${{ matrix.nvidia_version }}")
