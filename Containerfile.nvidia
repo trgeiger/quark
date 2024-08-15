@@ -26,6 +26,8 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     --mount=type=bind,from=nvidia-akmods,src=/rpms,dst=/tmp/akmods-rpms \
     if [[ "${NVIDIA_VERSION}" == "beta" ]]; then \
         sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/tayler.repo \
+    ; else \
+        sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/tayler.repo \
     ; fi  && \
     rpm-ostree install \
         xorg-x11-drv-nvidia-cuda \

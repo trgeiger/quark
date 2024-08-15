@@ -15,7 +15,7 @@ ARG KERNEL_FLAVOR="${KERNEL_FLAVOR}"
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
 
-COPY system_files/shared /
+COPY system_files /
 COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
 # Add custom repos
