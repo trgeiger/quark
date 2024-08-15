@@ -112,6 +112,14 @@ jobs:
             org.opencontainers.image.version=${{ steps.labels.outputs.VERSION }}
             org.opencontainers.image.description=Personal Silverblue image
 
+      - name: Pull images
+        uses: Wandalen/wretry.action@v3.5.0
+        with:
+          attempt_limit: 3
+          attempt_delay: 15000
+          command: |
+            podman pull quay.io/fedora-ostree-desktops/silverblue:${{ matrix.fedora_version }}
+
       # Build image using Buildah action
       - name: Build Image
         id: build_image

@@ -16,8 +16,9 @@ env:
 
 jobs:
   push-ghcr:
-    name: Create image
+    name: Create NVIDIA images
     runs-on: ubuntu-24.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' }}
     permissions:
       contents: read
       packages: write
@@ -121,6 +122,15 @@ jobs:
           else
               echo "${{ secrets.QUARK_PRIVKEY_18012024 }}" > tmp/private_key.priv
           fi
+
+      - name: Pull images
+        uses: Wandalen/wretry.action@v3.5.0
+        with:
+          attempt_limit: 3
+          attempt_delay: 15000
+          command: |
+            podman pull ${{ env.IMAGE_REGISTRY }}/quark:${{ matrix.fedora_version }}
+            podman pull ${{ env.IMAGE_REGISTRY }}/nvidia-kmod-${{ env.NVIDIA_MODULE_TYPE }}:${{ matrix.fedora_version }}-${{ matrix.nvidia_version }}
 
       # Build image using Buildah action
       - name: Build Image
