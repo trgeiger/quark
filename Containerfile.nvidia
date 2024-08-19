@@ -47,3 +47,20 @@ RUN rm -f /etc/pki/akmods/private/private_key.priv && \
     /usr/libexec/containerbuild/build-initramfs && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
+
+FROM quark AS quark-cosmic
+
+ARG IMAGE_NAME="${IMAGE_NAME:-quark-cosmic}"
+ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
+ARG IMAGE_FLAVOR="${IMAGE_FLAVOR}"
+ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
+ARG KERNEL_FLAVOR="${KERNEL_FLAVOR}"
+ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
+ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
+ARG NVIDIA_VERSION="${NVIDIA_VERSION:-stable}"
+
+RUN curl -Lo /etc/yum.repos.d/_copr_ryanabx-cosmic.repo https://copr.fedorainfracloud.org/coprs/ryanabx/cosmic-epoch/repo/fedora-$(rpm -E %fedora)/ryanabx-cosmic-epoch-fedora-$(rpm -E %fedora).repo && \
+    rpm-ostree install cosmic-desktop && \
+    /usr/libexec/containerbuild/build-initramfs && \
+    /usr/libexec/containerbuild/cleanup.sh && \
+    ostree container commit

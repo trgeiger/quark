@@ -27,7 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         image_flavor: [main]
-        base_name: [quark-open, quark-closed]
+        base_name: [quark-open, quark-closed, quark-cosmic]
         nvidia_version: [stable, beta]
         fedora_version: [40]
         include:
@@ -49,6 +49,11 @@ jobs:
       - name: Matrix Variables
         run: |
           echo "IMAGE_NAME=${{ matrix.base_name }}" >> $GITHUB_ENV
+          if [[ ${{ matrix.base_name }} == "quark-cosmic" ]]; then
+            echo "TARGET"="quark-cosmic" >> $GITHUB_ENV
+          else
+            echo "TARGET"="quark" >> $GITHUB_ENV
+          fi
 
       - name: Generate tags
         id: generate-tags
@@ -152,7 +157,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           oci: false
           extra-args: |
-            --target=quark
+            --target=${{ env.TARGET }}
 
       - name: Sign kernel
         uses: EyeCantCU/kernel-signer@v0.2.1
