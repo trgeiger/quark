@@ -406,7 +406,8 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         libdbusmenu-gtk3.i686 \
         libatomic.i686 \
         pipewire-alsa.i686 \
-        clinfo && \
+        clinfo \
+        https://kojipkgs.fedoraproject.org//packages/SDL2/2.30.3/1.fc40/i686/SDL2-2.30.3-1.fc40.i686.rpm && \
     sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/fedora-updates.repo && \
     rpm-ostree install \
         mesa-vulkan-drivers.i686 \
