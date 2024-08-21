@@ -24,12 +24,20 @@ RUN install -Dm644 tmp/private_key.priv /etc/pki/akmods/private/private_key.priv
 
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     --mount=type=bind,from=nvidia-akmods,src=/rpms,dst=/tmp/akmods-rpms \
+    ENABLED_REPOS="fedora,updates,updates-archive,rpmfusion-free,rpmfusion-nonfree,rpmfusion-free-updates,rpmfusion-nonfree-updates" && \
     if [[ "${NVIDIA_VERSION}" == "beta" ]]; then \
-        sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/tayler.repo \
+        # sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/tayler.repo \
+        echo "Installing beta driver" && \
+        cpm enable kwizart/nvidia-driver-rawhide && \
+        sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/fedora-updates-testing.repo && \
+        rpm-ostree install rpmfusion-nonfree-release-rawhide && \
+        ENABLED_REPOS="$ENABLED_REPOS,updates-testing,rpmfusion-nonfree-rawhide" \
     ; else \
-        sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/tayler.repo \
+        echo "Installing stable driver" \
+        # sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/tayler.repo \
     ; fi  && \
     rpm-ostree install \
+    --enablerepo=$ENABLED_REPOS \
         xorg-x11-drv-nvidia-cuda \
         xorg-x11-drv-nvidia-cuda-libs \
         nvidia-vaapi-driver \
@@ -44,23 +52,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 
 RUN rm -f /etc/pki/akmods/private/private_key.priv && \
     rm -f /etc/pki/akmods/certs/public_key.der && \
-    /usr/libexec/containerbuild/build-initramfs && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
-
-FROM quark AS quark-cosmic
-
-ARG IMAGE_NAME="${IMAGE_NAME:-quark-cosmic}"
-ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
-ARG IMAGE_FLAVOR="${IMAGE_FLAVOR}"
-ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
-ARG KERNEL_FLAVOR="${KERNEL_FLAVOR}"
-ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
-ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
-ARG NVIDIA_VERSION="${NVIDIA_VERSION:-stable}"
-
-RUN curl -Lo /etc/yum.repos.d/_copr_ryanabx-cosmic.repo https://copr.fedorainfracloud.org/coprs/ryanabx/cosmic-epoch/repo/fedora-$(rpm -E %fedora)/ryanabx-cosmic-epoch-fedora-$(rpm -E %fedora).repo && \
-    rpm-ostree install cosmic-desktop && \
     /usr/libexec/containerbuild/build-initramfs && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
