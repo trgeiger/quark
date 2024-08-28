@@ -354,16 +354,17 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:ublue-os:staging \
-        gnome-shell \
         mutter \
         mutter-common \
         gnome-shell && \
     rpm-ostree install \
         ptyxis \
         nautilus-open-any-terminal \
+        gnome-randr-rust \
         gnome-epub-thumbnailer \
         gnome-tweaks \
         gnome-shell-extension-blur-my-shell \
+        gnome-shell-extension-caffeine \
         gnome-shell-extension-just-perfection \
         gnome-shell-extension-hotedge && \
     rpm-ostree override remove \
@@ -378,7 +379,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 
 # Gaming-specific changes
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    # --mount=type=bind,from=nvidia-akmods,src=/rpms,dst=/tmp/akmods-rpms \
     if [[ "${IMAGE_NAME}" == "quark" ]]; then \
     rpm-ostree install \
         jupiter-sd-mounting-btrfs \
@@ -438,16 +438,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/yad-icon-browser.desktop && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/winetricks.desktop && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/protontricks.desktop && \
-    # rpm-ostree install \
-    #     xorg-x11-drv-nvidia-cuda \
-    #     xorg-x11-drv-nvidia-cuda-libs \
-    #     nvidia-vaapi-driver \
-    #     libva-utils \
-    #     vdpauinfo \
-    #     libva-nvidia-driver \
-    #     mesa-vulkan-drivers.i686 \
-    #     /tmp/akmods-rpms/kmods/kmod-nvidia-*.rpm && \
-    # rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit \
     ; fi
