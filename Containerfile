@@ -18,7 +18,7 @@ ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
 COPY system_files /
 COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
-# Add custom repos
+# Setup repos and ublue-os config rpms
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     mkdir -p /var/lib/alternatives && \
     wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
@@ -31,15 +31,10 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         bieszczaders/kernel-cachyos && \
     cpm enable -m \
         kylegospo/bazzite-multilib && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
-
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    wget -P /tmp/rpms/config \
-        https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
-        https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm && \
-    rm -f /tmp/rpms/config/ublue-os-update-services*.rpm && \
+    rm -rf /tmp/rpms/config/ublue-os-update-services.*.rpm && \
     rpm-ostree install \
+        https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
+        https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm \
         /tmp/rpms/config/*.rpm \
         fedora-repos-archive && \
     /usr/libexec/containerbuild/cleanup.sh && \
@@ -428,6 +423,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         gamescope.x86_64 \
         gamescope-libs.i686 \
         gamescope-shaders \ 
+        gamescope-legacy \
         vkBasalt.x86_64 \
         vkBasalt.i686 \
         mangohud.x86_64 \
