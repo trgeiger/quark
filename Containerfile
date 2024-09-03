@@ -244,8 +244,8 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         bluez-libs \
         xorg-x11-server-Xwayland && \
     rpm-ostree install \
-        mesa-va-drivers-freeworld \
-        mesa-vdpau-drivers-freeworld.x86_64 \
+        # mesa-va-drivers-freeworld \
+        # mesa-vdpau-drivers-freeworld.x86_64 \
         libaacs \
         libbdplus \
         libbluray && \
@@ -405,9 +405,9 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         https://kojipkgs.fedoraproject.org//packages/SDL2/2.30.3/1.fc40/i686/SDL2-2.30.3-1.fc40.i686.rpm && \
     sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/fedora-updates.repo && \
     rpm-ostree install \
-        mesa-vulkan-drivers.i686 \
-        mesa-va-drivers-freeworld.i686 \
-        mesa-vdpau-drivers-freeworld.i686 && \
+        mesa-vulkan-drivers.i686 && \
+        # mesa-va-drivers-freeworld.i686 \
+        # mesa-vdpau-drivers-freeworld.i686 && \
     sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree-steam.repo && \
     sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree.repo && \
     sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree-updates.repo && \
