@@ -3,7 +3,7 @@ ARG IMAGE_FLAVOR="${IMAGE_FLAVOR:-main}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
 ARG SOURCE_IMAGE="${SOURCE_IMAGE:-$BASE_IMAGE_NAME}"
 ARG BASE_IMAGE="quay.io/fedora-ostree-desktops/${SOURCE_IMAGE}"
-ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
+ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-41}"
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS quark
 
@@ -13,7 +13,7 @@ ARG IMAGE_FLAVOR="${IMAGE_FLAVOR}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
 ARG KERNEL_FLAVOR="${KERNEL_FLAVOR}"
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
-ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
+ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-41}"
 
 COPY system_files /
 COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
@@ -23,14 +23,14 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     mkdir -p /var/lib/alternatives && \
     wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
     cpm enable \
-        ublue-os/staging \
-        kylegospo/bazzite \
-        che/nerd-fonts \
-        sentry/switcheroo-control_discrete \
+        # ublue-os/staging \
+        # kylegospo/bazzite \
+        # che/nerd-fonts \
+        # sentry/switcheroo-control_discrete \
         bieszczaders/kernel-cachyos-addons \
         bieszczaders/kernel-cachyos && \
-    cpm enable -m \
-        kylegospo/bazzite-multilib && \
+    # cpm enable -m \
+        # kylegospo/bazzite-multilib && \
     rm -rf /tmp/rpms/config/ublue-os-update-services.*.rpm && \
     rpm-ostree install \
         https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
@@ -218,50 +218,50 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib \
-        mesa-filesystem \
-        mesa-libxatracker \
-        mesa-libglapi \
-        mesa-dri-drivers \
-        mesa-libgbm \
-        mesa-libEGL \
-        mesa-vulkan-drivers \
-        mesa-libGL \
-        pipewire \
-        pipewire-alsa \
-        pipewire-gstreamer \
-        pipewire-jack-audio-connection-kit \
-        pipewire-jack-audio-connection-kit-libs \
-        pipewire-libs \
-        pipewire-pulseaudio \
-        pipewire-utils \
-        bluez \
-        bluez-obexd \
-        bluez-cups \
-        bluez-libs \
-        xorg-x11-server-Xwayland && \
-    rpm-ostree install \
-        mesa-va-drivers-freeworld \
-        mesa-vdpau-drivers-freeworld.x86_64 \
-        libaacs \
-        libbdplus \
-        libbluray && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
-        switcheroo-control && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
+# RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib \
+#         mesa-filesystem \
+#         mesa-libxatracker \
+#         mesa-libglapi \
+#         mesa-dri-drivers \
+#         mesa-libgbm \
+#         mesa-libEGL \
+#         mesa-vulkan-drivers \
+#         mesa-libGL \
+#         pipewire \
+#         pipewire-alsa \
+#         pipewire-gstreamer \
+#         pipewire-jack-audio-connection-kit \
+#         pipewire-jack-audio-connection-kit-libs \
+#         pipewire-libs \
+#         pipewire-pulseaudio \
+#         pipewire-utils \
+#         bluez \
+#         bluez-obexd \
+#         bluez-cups \
+#         bluez-libs \
+#         xorg-x11-server-Xwayland && \
+#     rpm-ostree install \
+#         mesa-va-drivers-freeworld \
+#         mesa-vdpau-drivers-freeworld.x86_64 \
+#         libaacs \
+#         libbdplus \
+#         libbluray && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
+#         switcheroo-control && \
+#     /usr/libexec/containerbuild/cleanup.sh && \
+#     ostree container commit
     
 # CachyOS addons
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos-addons \
-        libbpf && \
+    # rpm-ostree override replace \
+    # --experimental \
+    # --from repo=copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos-addons \
+    #     libbpf && \
     rpm-ostree install \
         scx-scheds && \
     /usr/libexec/containerbuild/cleanup.sh && \
@@ -281,6 +281,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         ffmpeg \
         ffmpeg-libs \
         ffmpegthumbnailer \
+        fuse-libs \
         fzf \
         google-noto-sans-balinese-fonts \
         google-noto-sans-cjk-fonts \
@@ -298,7 +299,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         libva-intel-driver \
         libva-utils \
         lshw \
-        nerd-fonts \
+        # nerd-fonts \
         net-tools \
         nvme-cli \
         nvtop \
@@ -348,27 +349,21 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     rpm-ostree override replace \
     --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:ublue-os:staging \
+    --from repo=tayler \
         mutter \
-        mutter-common \
-        gnome-shell && \
+        mutter-common && \
     rpm-ostree install \
-        ptyxis \
-        nautilus-open-any-terminal \
-        gnome-randr-rust \
         gnome-epub-thumbnailer \
         gnome-tweaks \
         gnome-shell-extension-blur-my-shell \
         gnome-shell-extension-caffeine \
-        gnome-shell-extension-just-perfection \
-        gnome-shell-extension-hotedge && \
+        gnome-shell-extension-just-perfection && \
+        # gnome-shell-extension-hotedge && \
     rpm-ostree override remove \
         gnome-software-rpm-ostree \
         gnome-tour \
         gnome-extensions-app \
-        gnome-classic-session \
-        gnome-classic-session-xsession \
-        gnome-terminal-nautilus && \ 
+        gnome-classic-session && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
@@ -376,38 +371,38 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     if [[ "${IMAGE_NAME}" == "quark" ]]; then \
     rpm-ostree install \
-        jupiter-sd-mounting-btrfs \
-        at-spi2-core.i686 \
-        atk.i686 \
-        vulkan-loader.i686 \
-        alsa-lib.i686 \
-        fontconfig.i686 \
-        gtk2.i686 \
-        libICE.i686 \
-        libnsl.i686 \
-        libxcrypt-compat.i686 \
-        libpng12.i686 \
-        libXext.i686 \
-        libXinerama.i686 \
-        libXtst.i686 \
-        libXScrnSaver.i686 \
-        NetworkManager-libnm.i686 \
-        nss.i686 \
-        pulseaudio-libs.i686 \
-        libcurl.i686 \
-        systemd-libs.i686 \
-        libva.i686 \
-        libvdpau.i686 \
-        libdbusmenu-gtk3.i686 \
-        libatomic.i686 \
-        pipewire-alsa.i686 \
-        clinfo \
-        https://kojipkgs.fedoraproject.org//packages/SDL2/2.30.3/1.fc40/i686/SDL2-2.30.3-1.fc40.i686.rpm && \
+        # jupiter-sd-mounting-btrfs \
+        # at-spi2-core.i686 \
+        # atk.i686 \
+        # vulkan-loader.i686 \
+        # alsa-lib.i686 \
+        # fontconfig.i686 \
+        # gtk2.i686 \
+        # libICE.i686 \
+        # libnsl.i686 \
+        # libxcrypt-compat.i686 \
+        # libpng12.i686 \
+        # libXext.i686 \
+        # libXinerama.i686 \
+        # libXtst.i686 \
+        # libXScrnSaver.i686 \
+        # NetworkManager-libnm.i686 \
+        # nss.i686 \
+        # pulseaudio-libs.i686 \
+        # libcurl.i686 \
+        # systemd-libs.i686 \
+        # libva.i686 \
+        # libvdpau.i686 \
+        # libdbusmenu-gtk3.i686 \
+        # libatomic.i686 \
+        # pipewire-alsa.i686 \
+        clinfo && \
+        # https://kojipkgs.fedoraproject.org//packages/SDL2/2.30.3/1.fc40/i686/SDL2-2.30.3-1.fc40.i686.rpm && \
     sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/fedora-updates.repo && \
     rpm-ostree install \
-        mesa-vulkan-drivers.i686 \
-        mesa-va-drivers-freeworld.i686 \
-        mesa-vdpau-drivers-freeworld.i686 && \
+        mesa-vulkan-drivers.i686 && \
+        # mesa-va-drivers-freeworld.i686 \
+        # mesa-vdpau-drivers-freeworld.i686 && \
     sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree-steam.repo && \
     sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree.repo && \
     sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree-updates.repo && \
@@ -420,14 +415,17 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
     sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/fedora-updates.repo && \
     rpm-ostree install \
-        gamescope.x86_64 \
-        gamescope-libs.i686 \
-        gamescope-shaders \ 
-        gamescope-legacy \
-        vkBasalt.x86_64 \
-        vkBasalt.i686 \
-        mangohud.x86_64 \
-        mangohud.i686 \
+        gamescope \
+        mangohud \
+        vkBasalt \
+        # gamescope.x86_64 \
+        # gamescope-libs.i686 \
+        # gamescope-shaders \ 
+        # gamescope-legacy \
+        # vkBasalt.x86_64 \
+        # vkBasalt.i686 \
+        # mangohud.x86_64 \
+        # mangohud.i686 \
         protontricks \
         intel-undervolt && \
     systemctl enable gamescope-workaround.service && \
@@ -449,7 +447,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     rm -f /usr/share/applications/shredder.desktop && \
     mkdir -p /usr/etc/flatpak/remotes.d && \
     wget -q https://dl.flathub.org/repo/flathub.flatpakrepo -P /usr/etc/flatpak/remotes.d && \
-    sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/org.gnome.Terminal.desktop  && \
+    # sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/org.gnome.Terminal.desktop  && \
     sed -i 's@Name=tuned-gui@Name=TuneD Manager@g' /usr/share/applications/tuned-gui.desktop && \
     curl -Lo /tmp/starship.tar.gz "https://github.com/starship/starship/releases/latest/download/starship-x86_64-unknown-linux-gnu.tar.gz" && \
     tar -xzf /tmp/starship.tar.gz -C /tmp && \
@@ -466,7 +464,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     sed -i 's/^NAME=.*/NAME="Quark"/' /usr/lib/os-release && \
     fc-cache --system-only --really-force --verbose && \
     /usr/libexec/containerbuild/image-info && \
-    /usr/libexec/containerbuild/build-initramfs && \
+    # /usr/libexec/containerbuild/build-initramfs && \
     /usr/libexec/containerbuild/cleanup.sh && \
     mkdir -p /var/tmp && chmod 1777 /var/tmp && \
     ostree container commit
