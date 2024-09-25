@@ -20,7 +20,6 @@ COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
 # Setup repos and ublue-os config rpms
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    mkdir -p /var/lib/alternatives && \
     wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
     cpm enable \
         ublue-os/staging \
@@ -176,6 +175,8 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     --from repo=updates \
         libedit \
         || true && \
+    rpm-ostree override replace \
+        https://koji.fedoraproject.org/koji/buildinfo?buildID=2523233 && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
@@ -484,7 +485,8 @@ ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION}"
 
 # Install Openshift tools -- oc, opm, kubectl, operator-sdk, odo, helm, crc
-RUN export VER=$(curl --silent -qI https://github.com/operator-framework/operator-sdk/releases/latest | \
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    export VER=$(curl --silent -qI https://github.com/operator-framework/operator-sdk/releases/latest | \
     awk -F '/' '/^location/ {print  substr($NF, 1, length($NF)-1)}') && \
     wget https://github.com/operator-framework/operator-sdk/releases/download/$VER/operator-sdk_linux_amd64 -O /usr/bin/operator-sdk && \
     chmod +x /usr/bin/operator-sdk && \
@@ -492,29 +494,38 @@ RUN export VER=$(curl --silent -qI https://github.com/operator-framework/operato
     curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/opm-linux.tar.gz | tar xvzf - -C /usr/bin && \
     curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/helm/latest/helm-linux-amd64 -o /usr/bin/helm && chmod +x /usr/bin/helm && \
     curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/odo/latest/odo-linux-amd64 -o /usr/bin/odo && chmod +x /usr/bin/odo && \
-    curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/crc/latest/crc-linux-amd64.tar.xz | tar xfJ - --strip-components 1 -C /usr/bin
+    curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/crc/latest/crc-linux-amd64.tar.xz | tar xfJ - --strip-components 1 -C /usr/bin && \
+    /usr/libexec/containerbuild/cleanup.sh && \
+    ostree container commit
+
 
 # Install Kind
-RUN curl -Lo ./kind "https://github.com/kubernetes-sigs/kind/releases/latest/download/kind-$(uname)-amd64" && \
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    curl -Lo ./kind "https://github.com/kubernetes-sigs/kind/releases/latest/download/kind-$(uname)-amd64" && \
     chmod +x ./kind && \
-    mv ./kind /usr/bin/kind
+    mv ./kind /usr/bin/kind && \
+    /usr/libexec/containerbuild/cleanup.sh && \
+    ostree container commit
 
 # Install awscli
-RUN curl -SL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip && \
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    curl -SL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip && \
     unzip awscliv2.zip && \
-    ./aws/install --bin-dir /usr/bin --install-dir /usr/bin
-
-# VSCode repo
-RUN echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo && rpm --import https://packages.microsoft.com/keys/microsoft.asc
+    ./aws/install --bin-dir /usr/bin --install-dir /usr/bin && \
+    /usr/libexec/containerbuild/cleanup.sh && \
+    ostree container commit
 
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo && rpm --import https://packages.microsoft.com/keys/microsoft.asc && \
     rpm-ostree install \
         code \
         make \
         qemu \
         libvirt \
         virt-manager && \
-        rm -f /var/lib/unbound/root.key
+        rm -f /var/lib/unbound/root.key && \
+        /usr/libexec/containerbuild/cleanup.sh && \
+        ostree container commit
 
 RUN cpm remove --all && \
     rm -f get_helm.sh && \
@@ -524,4 +535,5 @@ RUN cpm remove --all && \
     rm -f /usr/bin/LICENSE && \
     sed -i '/^PRETTY_NAME/s/Quark/Quark Cloud Dev/' /usr/lib/os-release && \
     sed -i 's/^NAME=.*/NAME="Quark Cloud Dev"/' /usr/lib/os-release && \
+    /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
