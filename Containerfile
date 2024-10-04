@@ -23,14 +23,9 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     mkdir -p /var/lib/alternatives && \
     wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
     cpm enable \
-        # ublue-os/staging \
-        # kylegospo/bazzite \
-        # che/nerd-fonts \
-        # sentry/switcheroo-control_discrete \
+        che/nerd-fonts \
         bieszczaders/kernel-cachyos-addons \
         bieszczaders/kernel-cachyos && \
-    # cpm enable -m \
-        # kylegospo/bazzite-multilib && \
     rm -rf /tmp/rpms/config/ublue-os-update-services.*.rpm && \
     rpm-ostree install \
         https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
@@ -41,143 +36,140 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     ostree container commit
 
 # Update packages that commonly cause build issues
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        vulkan-loader \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        alsa-lib \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        gnutls \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        glib2 \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        nspr \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        nss-softokn \
-        nss-softokn-freebl \
-        nss-util \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        atk \
-        at-spi2-atk \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libaom \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        gstreamer1 \
-        gstreamer1-plugins-base \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libdecor \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libtirpc \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libuuid \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libblkid \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libmount \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        cups-libs \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libinput \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libopenmpt \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        llvm-libs \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        zlib-ng-compat \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        fontconfig \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        pciutils-libs \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libdrm \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libX11 \
-        libX11-common \
-        libX11-xcb \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libv4l \
-        || true && \
-    rpm-ostree override remove \
-        glibc32 \
-        || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        libedit \
-        || true && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
+# RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         vulkan-loader \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         alsa-lib \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         gnutls \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         glib2 \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         nspr \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         nss-softokn \
+#         nss-softokn-freebl \
+#         nss-util \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         atk \
+#         at-spi2-atk \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         libaom \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         gstreamer1 \
+#         gstreamer1-plugins-base \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         libdecor \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         libtirpc \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         libuuid \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         libblkid \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         libmount \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         cups-libs \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         libinput \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         libopenmpt \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         llvm-libs \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         zlib-ng-compat \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         fontconfig \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         pciutils-libs \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         libdrm \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         libX11 \
+#         libX11-common \
+#         libX11-xcb \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         libv4l \
+#         || true && \
+#     rpm-ostree override replace \
+#     --experimental \
+#     --from repo=updates \
+#         libedit \
+#         || true && \
+#     /usr/libexec/containerbuild/cleanup.sh && \
+#     ostree container commit
 
 # Install CachyOS kernel
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
@@ -198,23 +190,11 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 # Removals
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     rpm-ostree override remove \
-        ffmpeg-free \
         google-noto-sans-cjk-vf-fonts \
-        libavcodec-free \
-        libavdevice-free \
-        libavfilter-free \
-        libavformat-free \
-        libavutil-free \
-        libpostproc-free \
-        libswresample-free \
-        libswscale-free \
         mesa-va-drivers \
         default-fonts-cjk-sans \
         firefox \
         firefox-langpacks && \
-    rpm-ostree override remove \
-        power-profiles-daemon \
-        || true && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
@@ -258,10 +238,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     
 # CachyOS addons
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    # rpm-ostree override replace \
-    # --experimental \
-    # --from repo=copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos-addons \
-    #     libbpf && \
     rpm-ostree install \
         scx-scheds && \
     /usr/libexec/containerbuild/cleanup.sh && \
@@ -275,11 +251,10 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         apr-util \
         adw-gtk3-theme \
         cascadia-code-fonts \
+        default-fonts-cjk-sans \
         distrobox \
         drm_info \
         fastfetch \
-        ffmpeg \
-        ffmpeg-libs \
         ffmpegthumbnailer \
         fuse-libs \
         fzf \
@@ -292,14 +267,12 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         intel-media-driver \
         just \
         kernel-tools \
-        libheif-freeworld \
         libheif-tools \
-        default-fonts-cjk-sans \
         libratbag-ratbagd \
         libva-intel-driver \
         libva-utils \
         lshw \
-        # nerd-fonts \
+        nerd-fonts \
         net-tools \
         nvme-cli \
         nvtop \
@@ -447,7 +420,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     rm -f /usr/share/applications/shredder.desktop && \
     mkdir -p /usr/etc/flatpak/remotes.d && \
     wget -q https://dl.flathub.org/repo/flathub.flatpakrepo -P /usr/etc/flatpak/remotes.d && \
-    # sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/org.gnome.Terminal.desktop  && \
     sed -i 's@Name=tuned-gui@Name=TuneD Manager@g' /usr/share/applications/tuned-gui.desktop && \
     curl -Lo /tmp/starship.tar.gz "https://github.com/starship/starship/releases/latest/download/starship-x86_64-unknown-linux-gnu.tar.gz" && \
     tar -xzf /tmp/starship.tar.gz -C /tmp && \
@@ -464,7 +436,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     sed -i 's/^NAME=.*/NAME="Quark"/' /usr/lib/os-release && \
     fc-cache --system-only --really-force --verbose && \
     /usr/libexec/containerbuild/image-info && \
-    # /usr/libexec/containerbuild/build-initramfs && \
+    /usr/libexec/containerbuild/build-initramfs && \
     /usr/libexec/containerbuild/cleanup.sh && \
     mkdir -p /var/tmp && chmod 1777 /var/tmp && \
     ostree container commit
