@@ -49,7 +49,8 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         /tmp/akmods-rpms/kmods/kmod-nvidia-*.rpm && \
     KERNEL_VERSION="$(rpm -q kernel-cachyos --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" && \
     modinfo -l /usr/lib/modules/${KERNEL_VERSION}/extra/nvidia/nvidia{,-drm,-modeset,-peermem,-uvm}.ko.xz && \
-    rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json
+    rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json && \
+    echo 'force_drivers+=" nvidia nvidia-drm nvidia-modeset nvidia-peermem nvidia-uvm "' > /usr/lib/dracut/dracut.conf.d/95-nvidia.conf
 
 RUN rm -f /etc/pki/akmods/private/private_key.priv && \
     rm -f /etc/pki/akmods/certs/public_key.der && \
