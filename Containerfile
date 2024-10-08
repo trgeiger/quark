@@ -198,44 +198,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
-# RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib \
-#         mesa-filesystem \
-#         mesa-libxatracker \
-#         mesa-libglapi \
-#         mesa-dri-drivers \
-#         mesa-libgbm \
-#         mesa-libEGL \
-#         mesa-vulkan-drivers \
-#         mesa-libGL \
-#         pipewire \
-#         pipewire-alsa \
-#         pipewire-gstreamer \
-#         pipewire-jack-audio-connection-kit \
-#         pipewire-jack-audio-connection-kit-libs \
-#         pipewire-libs \
-#         pipewire-pulseaudio \
-#         pipewire-utils \
-#         bluez \
-#         bluez-obexd \
-#         bluez-cups \
-#         bluez-libs \
-#         xorg-x11-server-Xwayland && \
-#     rpm-ostree install \
-#         mesa-va-drivers-freeworld \
-#         mesa-vdpau-drivers-freeworld.x86_64 \
-#         libaacs \
-#         libbdplus \
-#         libbluray && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
-#         switcheroo-control && \
-#     /usr/libexec/containerbuild/cleanup.sh && \
-#     ostree container commit
-    
 # CachyOS addons
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     rpm-ostree install \

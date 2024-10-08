@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         image_flavor: [main]
-        base_name: [quark]
+        base_name: [quark, quark-cloud-dev]
         fedora_version: [41]
         include:
           - major_version: 41
