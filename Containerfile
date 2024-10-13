@@ -269,9 +269,9 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         tuned \
         tuned-gtk \
         tuned-ppd \
-        tuned-profiles-atomic \
         tuned-profiles-cpu-partitioning \
         tuned-utils \
+        i2c-tools \
         unrar \
         vulkan-tools \
         wl-clipboard \
