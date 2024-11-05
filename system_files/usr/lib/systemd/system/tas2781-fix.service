@@ -4,7 +4,7 @@ After=suspend.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/libexec/tas2781-fix
+ExecStart=/usr/libexec/tas2781-fix 6
 
 [Install]
 WantedBy=multi-user.target suspend.target

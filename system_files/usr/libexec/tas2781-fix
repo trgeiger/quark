@@ -3,7 +3,7 @@
 #tas2781_i2c_addr=(0x38 0x39 0x3b 0x3d)
 tas2781_i2c_addr=(0x38 0x3d)
 
-i2c_bus=6
+i2c_bus=$1
 
 for value in ${tas2781_i2c_addr[@]};
 do

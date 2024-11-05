@@ -35,7 +35,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     ostree container commit
 
 # Update packages that commonly cause build issues
-<<<<<<< HEAD
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     rpm-ostree override replace \
     --experimental \
@@ -65,8 +64,10 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     rpm-ostree override replace \
     --experimental \
     --from repo=updates \
+        nss \
         nss-softokn \
         nss-softokn-freebl \
+        nss-sysinit \
         nss-util \
         || true && \
     rpm-ostree override replace \
@@ -154,6 +155,17 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     rpm-ostree override replace \
     --experimental \
     --from repo=updates \
+        cpp \
+        libatomic \
+        libgcc \
+        libgfortran \
+        libgomp \
+        libobjc \
+        libstdc++ \
+        || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
         libX11 \
         libX11-common \
         libX11-xcb \
@@ -163,154 +175,17 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     --from repo=updates \
         libv4l \
         || true && \
-    rpm-ostree override remove \
-        glibc32 \
-        || true && \
     rpm-ostree override replace \
     --experimental \
     --from repo=updates \
-        libedit \
+        elfutils-libelf \
+        elfutils-libs \
         || true && \
-    rpm-ostree override replace \
-        https://koji.fedoraproject.org/koji/buildinfo?buildID=2523233 && \
+    rpm-ostree override remove \
+        glibc32 \
+        || true && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
-=======
-# RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         vulkan-loader \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         alsa-lib \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         gnutls \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         glib2 \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         nspr \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         nss-softokn \
-#         nss-softokn-freebl \
-#         nss-util \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         atk \
-#         at-spi2-atk \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         libaom \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         gstreamer1 \
-#         gstreamer1-plugins-base \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         libdecor \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         libtirpc \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         libuuid \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         libblkid \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         libmount \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         cups-libs \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         libinput \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         libopenmpt \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         llvm-libs \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         zlib-ng-compat \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         fontconfig \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         pciutils-libs \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         libdrm \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         libX11 \
-#         libX11-common \
-#         libX11-xcb \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         libv4l \
-#         || true && \
-#     rpm-ostree override replace \
-#     --experimental \
-#     --from repo=updates \
-#         libedit \
-#         || true && \
-#     /usr/libexec/containerbuild/cleanup.sh && \
-#     ostree container commit
->>>>>>> 3e2e2f62bf6db2fb4fc69487c746a132f69cf5dc
 
 # Install CachyOS kernel
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
@@ -339,47 +214,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
-<<<<<<< HEAD
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib \
-        mesa-filesystem \
-        mesa-libxatracker \
-        mesa-libglapi \
-        mesa-dri-drivers \
-        mesa-libgbm \
-        mesa-libEGL \
-        mesa-vulkan-drivers \
-        mesa-libGL \
-        pipewire \
-        pipewire-alsa \
-        pipewire-gstreamer \
-        pipewire-jack-audio-connection-kit \
-        pipewire-jack-audio-connection-kit-libs \
-        pipewire-libs \
-        pipewire-pulseaudio \
-        pipewire-utils \
-        bluez \
-        bluez-obexd \
-        bluez-cups \
-        bluez-libs \
-        xorg-x11-server-Xwayland && \
-    rpm-ostree install \
-        # mesa-va-drivers-freeworld \
-        # mesa-vdpau-drivers-freeworld.x86_64 \
-        libaacs \
-        libbdplus \
-        libbluray && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
-        switcheroo-control && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
-    
-=======
->>>>>>> 3e2e2f62bf6db2fb4fc69487c746a132f69cf5dc
 # CachyOS addons
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     rpm-ostree install \
