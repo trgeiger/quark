@@ -23,8 +23,13 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
     cpm enable \
         che/nerd-fonts \
+        kylegospo/bazzite \
+        ublue-os/staging \
+        sentry/switcheroo-control_discrete \
         bieszczaders/kernel-cachyos-addons \
         bieszczaders/kernel-cachyos && \
+    cpm enable -m \
+        kylegospo/bazzite-multilib && \
     rm -rf /tmp/rpms/config/ublue-os-update-services.*.rpm && \
     rpm-ostree install \
         https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
@@ -181,11 +186,37 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         elfutils-libelf \
         elfutils-libs \
         || true && \
+    # rpm-ostree override replace \
+    # --experimental \
+    # --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib \
+    #     mesa-dri-drivers \
+    #     mesa-va-drivers \
+    #     mesa-vulkan-drivers \
+    #     mesa-filesystem && \
     rpm-ostree override remove \
         glibc32 \
         || true && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
+
+# use negativo17 for 3rd party packages with higher priority than default
+RUN curl -Lo /etc/yum.repos.d/negativo17-fedora-multimedia.repo https://negativo17.org/repos/fedora-multimedia.repo && \
+    sed -i '0,/enabled=1/{s/enabled=1/enabled=1\npriority=90/}' /etc/yum.repos.d/negativo17-fedora-multimedia.repo && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo='fedora-multimedia' \
+        libheif \
+        libva \
+        libva-intel-media-driver \
+        mesa-dri-drivers \
+        mesa-filesystem \
+        mesa-libEGL \
+        mesa-libGL \
+        mesa-libgbm \
+        mesa-libglapi \
+        mesa-libxatracker \
+        mesa-va-drivers \
+        mesa-vulkan-drivers
 
 # Install CachyOS kernel
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
@@ -200,6 +231,46 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
             kernel-cachyos \
         --install \
             kernel-cachyos-devel-matched && \
+    /usr/libexec/containerbuild/cleanup.sh && \
+    ostree container commit
+
+# Install Valve's patched Mesa, Pipewire, Bluez, and Xwayland
+# Install patched switcheroo control with proper discrete GPU support
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib \
+        mesa-libxatracker \
+        mesa-libglapi \
+        mesa-dri-drivers \
+        mesa-libgbm \
+        mesa-libEGL \
+        mesa-vulkan-drivers \
+        mesa-libGL \
+        pipewire \
+        pipewire-alsa \
+        pipewire-gstreamer \
+        pipewire-jack-audio-connection-kit \
+        pipewire-jack-audio-connection-kit-libs \
+        pipewire-libs \
+        pipewire-pulseaudio \
+        pipewire-utils \
+        pipewire-plugin-libcamera \
+        bluez \
+        bluez-obexd \
+        bluez-cups \
+        bluez-libs \
+        xorg-x11-server-Xwayland && \
+    sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-*.repo && \
+    rpm-ostree install \
+        libaacs \
+        libbdplus \
+        libbluray && \
+    sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-*.repo && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
+        switcheroo-control && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
@@ -242,13 +313,9 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         google-noto-sans-sundanese-fonts \
         grub2-tools-extra \
         htop \
-        intel-media-driver \
         just \
         kernel-tools \
-        libheif-tools \
         libratbag-ratbagd \
-        libva-intel-driver \
-        libva-utils \
         lshw \
         nerd-fonts \
         net-tools \
@@ -259,7 +326,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         pam-u2f \
         pam_yubico \
         pamu2fcfg \
-        pipewire-codec-aptx \
         smartmontools \
         solaar-udev \
         symlinks \
@@ -300,21 +366,27 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     rpm-ostree override replace \
     --experimental \
+    --from repo=copr:copr.fedorainfracloud.org:ublue-os:staging \
+        gnome-shell && \
+    rpm-ostree override replace \
+    --experimental \
     --from repo=tayler \
         mutter \
         mutter-common && \
     rpm-ostree install \
+        gnome-randr-rust \
         gnome-epub-thumbnailer \
         gnome-tweaks \
         gnome-shell-extension-blur-my-shell \
         gnome-shell-extension-caffeine \
-        gnome-shell-extension-just-perfection && \
-        # gnome-shell-extension-hotedge && \
+        gnome-shell-extension-just-perfection \
+        gnome-shell-extension-hotedge && \
     rpm-ostree override remove \
-        gnome-software-rpm-ostree \
         gnome-tour \
         gnome-extensions-app \
-        gnome-classic-session && \
+        gnome-classic-session \
+        gnome-shell-extension-background-logo \
+        gnome-shell-extension-apps-menu && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
@@ -322,39 +394,35 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     if [[ "${IMAGE_NAME}" == "quark" ]]; then \
     rpm-ostree install \
-        # jupiter-sd-mounting-btrfs \
-        # at-spi2-core.i686 \
-        # atk.i686 \
-        # vulkan-loader.i686 \
-        # alsa-lib.i686 \
-        # fontconfig.i686 \
-        # gtk2.i686 \
-        # libICE.i686 \
-        # libnsl.i686 \
-        # libxcrypt-compat.i686 \
-        # libpng12.i686 \
-        # libXext.i686 \
-        # libXinerama.i686 \
-        # libXtst.i686 \
-        # libXScrnSaver.i686 \
-        # NetworkManager-libnm.i686 \
-        # nss.i686 \
-        # pulseaudio-libs.i686 \
-        # libcurl.i686 \
-        # systemd-libs.i686 \
-        # libva.i686 \
-        # libvdpau.i686 \
-        # libdbusmenu-gtk3.i686 \
-        # libatomic.i686 \
-        # pipewire-alsa.i686 \
+        jupiter-sd-mounting-btrfs \
+        at-spi2-core.i686 \
+        atk.i686 \
+        vulkan-loader.i686 \
+        alsa-lib.i686 \
+        fontconfig.i686 \
+        gtk2.i686 \
+        libICE.i686 \
+        libnsl.i686 \
+        libxcrypt-compat.i686 \
+        libpng12.i686 \
+        libXext.i686 \
+        libXinerama.i686 \
+        libXtst.i686 \
+        libXScrnSaver.i686 \
+        NetworkManager-libnm.i686 \
+        nss.i686 \
+        pulseaudio-libs.i686 \
+        libcurl.i686 \
+        systemd-libs.i686 \
+        libva.i686 \
+        libvdpau.i686 \
+        libdbusmenu-gtk3.i686 \
+        libatomic.i686 \
+        pipewire-alsa.i686 \
+        gobject-introspection \
         clinfo && \
-        # https://kojipkgs.fedoraproject.org//packages/SDL2/2.30.3/1.fc40/i686/SDL2-2.30.3-1.fc40.i686.rpm && \
-    sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/fedora-updates.repo && \
-    rpm-ostree install \
-        mesa-vulkan-drivers.i686 && \
-        # mesa-va-drivers-freeworld.i686 \
-        # mesa-vdpau-drivers-freeworld.i686 && \
     sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree-steam.repo && \
+    sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/fedora-updates.repo && \
     sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree.repo && \
     sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree-updates.repo && \
     sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
@@ -366,20 +434,24 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
     sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/fedora-updates.repo && \
     rpm-ostree install \
-        gamescope \
-        mangohud \
-        vkBasalt \
-        # gamescope.x86_64 \
-        # gamescope-libs.i686 \
-        # gamescope-shaders \ 
-        # gamescope-legacy \
-        # vkBasalt.x86_64 \
-        # vkBasalt.i686 \
-        # mangohud.x86_64 \
-        # mangohud.i686 \
+        wine-core.x86_64 \
+        wine-core.i686 \
+        wine-pulseaudio.x86_64 \
+        wine-pulseaudio.i686 \
+        libFAudio.x86_64 \
+        libFAudio.i686 \
+        winetricks \
+        mesa-vulkan-drivers.i686 \
+        mesa-va-drivers.i686 \
+        gamescope.x86_64 \
+        gamescope-libs.i686 \
+        gamescope-shaders \ 
+        vkBasalt.x86_64 \
+        vkBasalt.i686 \
+        mangohud.x86_64 \
+        mangohud.i686 \
         protontricks \
         intel-undervolt && \
-    systemctl enable gamescope-workaround.service && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/yad-icon-browser.desktop && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/winetricks.desktop && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/protontricks.desktop && \
