@@ -186,13 +186,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         elfutils-libelf \
         elfutils-libs \
         || true && \
-    # rpm-ostree override replace \
-    # --experimental \
-    # --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib \
-    #     mesa-dri-drivers \
-    #     mesa-va-drivers \
-    #     mesa-vulkan-drivers \
-    #     mesa-filesystem && \
     rpm-ostree override remove \
         glibc32 \
         || true && \
@@ -237,6 +230,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 # Install Valve's patched Mesa, Pipewire, Bluez, and Xwayland
 # Install patched switcheroo control with proper discrete GPU support
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-*.repo && \
     rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib \
@@ -271,12 +265,22 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
         switcheroo-control && \
+    sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-*.repo && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
 # Removals
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     rpm-ostree override remove \
+        libavdevice-free \
+        libavfilter-free \
+        libavformat-free \
+        ffmpeg-free \
+        libpostproc-free \
+        libswresample-free \
+        libavutil-free \
+        libavcodec-free \
+        libswscale-free \
         google-noto-sans-cjk-vf-fonts \
         mesa-va-drivers \
         default-fonts-cjk-sans \
@@ -304,6 +308,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         distrobox \
         drm_info \
         fastfetch \
+        ffmpeg \
         ffmpegthumbnailer \
         fuse-libs \
         fzf \
@@ -317,6 +322,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         kernel-tools \
         libratbag-ratbagd \
         lshw \
+        mpv \
         nerd-fonts \
         net-tools \
         nvme-cli \
@@ -358,7 +364,9 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         vulkan-tools \
         wl-clipboard \
         xrandr \
+        x265 \
         zsh && \
+    sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/mpv.desktop && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
@@ -420,19 +428,8 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         libatomic.i686 \
         pipewire-alsa.i686 \
         gobject-introspection \
-        clinfo && \
-    sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree-steam.repo && \
-    sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/fedora-updates.repo && \
-    sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree.repo && \
-    sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree-updates.repo && \
-    sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
-    rpm-ostree install \
+        clinfo \
         steam && \
-    sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/rpmfusion-nonfree-steam.repo && \
-    sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree.repo && \
-    sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree-updates.repo && \
-    sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
-    sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/fedora-updates.repo && \
     rpm-ostree install \
         wine-core.x86_64 \
         wine-core.i686 \
