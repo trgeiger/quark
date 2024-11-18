@@ -401,7 +401,9 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 # Gaming-specific changes
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     if [[ "${IMAGE_NAME}" == "quark" ]]; then \
+    cpm enable ilyaz/LACT && \
     rpm-ostree install \
+        lact-libadwaita \
         jupiter-sd-mounting-btrfs \
         at-spi2-core.i686 \
         atk.i686 \
@@ -452,6 +454,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/yad-icon-browser.desktop && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/winetricks.desktop && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/protontricks.desktop && \
+    systemctl enable lactd && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit \
     ; fi
