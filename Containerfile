@@ -31,7 +31,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     cpm enable -m \
         kylegospo/bazzite-multilib && \
     rm -rf /tmp/rpms/config/ublue-os-update-services.*.rpm && \
-    rpm-ostree install \
+    dnf5 -y install \
         https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
         https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm \
         /tmp/rpms/config/*.rpm \
@@ -41,125 +41,79 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 
 # Update packages that commonly cause build issues
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         vulkan-loader \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         alsa-lib \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         gnutls \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         glib2 \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         nspr \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         nss \
         nss-softokn \
         nss-softokn-freebl \
         nss-sysinit \
         nss-util \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         atk \
         at-spi2-atk \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         libaom \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         gstreamer1 \
         gstreamer1-plugins-base \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         libdecor \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         libtirpc \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         libuuid \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         libblkid \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         libmount \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         cups-libs \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         libinput \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         libopenmpt \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         llvm-libs \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         zlib-ng-compat \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         fontconfig \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         pciutils-libs \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         libdrm \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         cpp \
         libatomic \
         libgcc \
@@ -168,36 +122,29 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         libobjc \
         libstdc++ \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         libX11 \
         libX11-common \
         libX11-xcb \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         libv4l \
         || true && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
+    dnf5 -y upgrade --repo updates \
         elfutils-libelf \
         elfutils-libs \
         || true && \
-    rpm-ostree override remove \
+    dnf5 -y remove \
         glibc32 \
         || true && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
 # use negativo17 for 3rd party packages with higher priority than default
-RUN curl -Lo /etc/yum.repos.d/negativo17-fedora-multimedia.repo https://negativo17.org/repos/fedora-multimedia.repo && \
+RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    curl -Lo /etc/yum.repos.d/negativo17-fedora-multimedia.repo https://negativo17.org/repos/fedora-multimedia.repo && \
     sed -i '0,/enabled=1/{s/enabled=1/enabled=1\npriority=90/}' /etc/yum.repos.d/negativo17-fedora-multimedia.repo && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo='fedora-multimedia' \
+    dnf5 -y upgrade \
         libheif \
         libva \
         libva-intel-media-driver \
@@ -207,9 +154,10 @@ RUN curl -Lo /etc/yum.repos.d/negativo17-fedora-multimedia.repo https://negativo
         mesa-libGL \
         mesa-libgbm \
         mesa-libglapi \
-        mesa-libxatracker \
         mesa-va-drivers \
-        mesa-vulkan-drivers
+        mesa-vulkan-drivers && \
+    dnf5 -y install \
+        mesa-libxatracker
 
 # Install CachyOS kernel
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
@@ -231,16 +179,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 # Install patched switcheroo control with proper discrete GPU support
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-*.repo && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib \
-        mesa-libxatracker \
-        mesa-libglapi \
-        mesa-dri-drivers \
-        mesa-libgbm \
-        mesa-libEGL \
-        mesa-vulkan-drivers \
-        mesa-libGL \
+    dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib \
         pipewire \
         pipewire-alsa \
         pipewire-gstreamer \
@@ -256,14 +195,12 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         bluez-libs \
         xorg-x11-server-Xwayland && \
     sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-*.repo && \
-    rpm-ostree install \
+    dnf5 -y install \
         libaacs \
         libbdplus \
         libbluray && \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-*.repo && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
+    dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
         switcheroo-control && \
     sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-*.repo && \
     /usr/libexec/containerbuild/cleanup.sh && \
@@ -271,7 +208,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 
 # Removals
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    rpm-ostree override remove \
+    dnf5 -y remove \
         libavdevice-free \
         libavfilter-free \
         libavformat-free \
@@ -289,16 +226,9 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
-# CachyOS addons
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    rpm-ostree install \
-        scx-scheds && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
-
 # Additions
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    rpm-ostree install \
+    dnf5 -y install \
         alsa-firmware \
         apr \
         apr-util \
@@ -365,6 +295,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         wl-clipboard \
         xrandr \
         x265 \
+        scx-scheds \
         zsh && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/mpv.desktop && \
     /usr/libexec/containerbuild/cleanup.sh && \
@@ -372,16 +303,12 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 
 # Gnome stuff
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:ublue-os:staging \
+    dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:ublue-os:staging \
         gnome-shell && \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=tayler \
+    dnf5 -y upgrade --repo tayler \
         mutter \
         mutter-common && \
-    rpm-ostree install \
+    dnf5 -y install \
         gnome-randr-rust \
         gnome-epub-thumbnailer \
         gnome-tweaks \
@@ -389,7 +316,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         gnome-shell-extension-caffeine \
         gnome-shell-extension-just-perfection \
         gnome-shell-extension-hotedge && \
-    rpm-ostree override remove \
+    dnf5 -y remove \
         gnome-tour \
         gnome-extensions-app \
         gnome-classic-session \
@@ -402,7 +329,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     if [[ "${IMAGE_NAME}" == "quark" ]]; then \
     cpm enable ilyaz/LACT && \
-    rpm-ostree install \
+    dnf5 -y install \
         lact-libadwaita \
         jupiter-sd-mounting-btrfs \
         at-spi2-core.i686 \
@@ -431,8 +358,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         pipewire-alsa.i686 \
         gobject-introspection \
         clinfo \
-        steam && \
-    rpm-ostree install \
+        steam \
         wine-core.x86_64 \
         wine-core.i686 \
         wine-pulseaudio.x86_64 \
@@ -519,24 +445,21 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 
 
 # Install Kind
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    curl -Lo ./kind "https://github.com/kubernetes-sigs/kind/releases/latest/download/kind-$(uname)-amd64" && \
+RUN curl -Lo ./kind "https://github.com/kubernetes-sigs/kind/releases/latest/download/kind-$(uname)-amd64" && \
     chmod +x ./kind && \
     mv ./kind /usr/bin/kind && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
 # Install awscli
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    curl -SL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip && \
+RUN curl -SL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip && \
     unzip awscliv2.zip && \
     ./aws/install --bin-dir /usr/bin --install-dir /usr/bin && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo && rpm --import https://packages.microsoft.com/keys/microsoft.asc && \
-    rpm-ostree install \
+RUN echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo && rpm --import https://packages.microsoft.com/keys/microsoft.asc && \
+    dnf5 -y install \
         code \
         make \
         qemu \

@@ -25,20 +25,18 @@ RUN install -Dm644 tmp/private_key.priv /etc/pki/akmods/private/private_key.priv
 
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     --mount=type=bind,from=nvidia-akmods,src=/rpms,dst=/tmp/akmods-rpms \
-    ENABLED_REPOS="fedora,updates,updates-archive,rpmfusion-free,rpmfusion-nonfree,rpmfusion-free-updates,rpmfusion-nonfree-updates" && \
+    sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/negativo17-fedora-multimedia.repo && \
     if [[ "${NVIDIA_VERSION}" == "beta" ]]; then \
         # sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/tayler.repo \
         echo "Installing beta driver" && \
         cpm enable kwizart/nvidia-driver-rawhide && \
         sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/fedora-updates-testing.repo && \
-        rpm-ostree install rpmfusion-nonfree-release-rawhide && \
-        ENABLED_REPOS="$ENABLED_REPOS,updates-testing,rpmfusion-nonfree-rawhide" \
+        dnf5 -y install rpmfusion-nonfree-release-rawhide \
     ; else \
         echo "Installing stable driver" \
         # sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/tayler.repo \
     ; fi  && \
-    rpm-ostree install \
-    --enablerepo=$ENABLED_REPOS \
+    dnf5 -y install \
         xorg-x11-drv-nvidia-cuda \
         xorg-x11-drv-nvidia-cuda-libs \
         nvidia-vaapi-driver \
