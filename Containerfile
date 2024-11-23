@@ -18,6 +18,9 @@ ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-41}"
 COPY system_files /
 COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
+# Update packages
+RUN dnf5 -y upgrade
+
 # Setup repos and ublue-os config rpms
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
@@ -26,8 +29,8 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         kylegospo/bazzite \
         ublue-os/staging \
         sentry/switcheroo-control_discrete \
-        bieszczaders/kernel-cachyos-addons \
-        bieszczaders/kernel-cachyos && \
+        bieszczaders/kernel-cachyos \
+        bieszczaders/kernel-cachyos-addons && \
     cpm enable -m \
         kylegospo/bazzite-multilib && \
     rm -rf /tmp/rpms/config/ublue-os-update-services.*.rpm && \
@@ -38,126 +41,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         fedora-repos-archive && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
-
-# Update packages that commonly cause build issues
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    dnf5 -y upgrade --repo updates \
-        vulkan-loader \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        alsa-lib \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        gnutls \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        glib2 \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        nspr \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        nss \
-        nss-softokn \
-        nss-softokn-freebl \
-        nss-sysinit \
-        nss-util \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        atk \
-        at-spi2-atk \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        libaom \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        gstreamer1 \
-        gstreamer1-plugins-base \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        libdecor \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        libtirpc \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        libuuid \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        libblkid \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        libmount \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        cups-libs \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        libinput \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        libopenmpt \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        llvm-libs \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        zlib-ng-compat \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        fontconfig \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        pciutils-libs \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        libdrm \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        cpp \
-        libatomic \
-        libgcc \
-        libgfortran \
-        libgomp \
-        libobjc \
-        libstdc++ \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        libX11 \
-        libX11-common \
-        libX11-xcb \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        libv4l \
-        || true && \
-    dnf5 -y upgrade --repo updates \
-        elfutils-libelf \
-        elfutils-libs \
-        || true && \
-    dnf5 -y remove \
-        glibc32 \
-        || true && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
-
-# use negativo17 for 3rd party packages with higher priority than default
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    curl -Lo /etc/yum.repos.d/negativo17-fedora-multimedia.repo https://negativo17.org/repos/fedora-multimedia.repo && \
-    sed -i '0,/enabled=1/{s/enabled=1/enabled=1\npriority=90/}' /etc/yum.repos.d/negativo17-fedora-multimedia.repo && \
-    dnf5 -y upgrade \
-        libheif \
-        libva \
-        libva-intel-media-driver \
-        mesa-dri-drivers \
-        mesa-filesystem \
-        mesa-libEGL \
-        mesa-libGL \
-        mesa-libgbm \
-        mesa-libglapi \
-        mesa-va-drivers \
-        mesa-vulkan-drivers && \
-    dnf5 -y install \
-        mesa-libxatracker
 
 # Install CachyOS kernel
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
@@ -175,36 +58,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
-# Install Valve's patched Mesa, Pipewire, Bluez, and Xwayland
-# Install patched switcheroo control with proper discrete GPU support
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-*.repo && \
-    dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:kylegospo:bazzite-multilib \
-        pipewire \
-        pipewire-alsa \
-        pipewire-gstreamer \
-        pipewire-jack-audio-connection-kit \
-        pipewire-jack-audio-connection-kit-libs \
-        pipewire-libs \
-        pipewire-pulseaudio \
-        pipewire-utils \
-        pipewire-plugin-libcamera \
-        bluez \
-        bluez-obexd \
-        bluez-cups \
-        bluez-libs \
-        xorg-x11-server-Xwayland && \
-    sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-*.repo && \
-    dnf5 -y install \
-        libaacs \
-        libbdplus \
-        libbluray && \
-    sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-*.repo && \
-    dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
-        switcheroo-control && \
-    sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-*.repo && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
 
 # Removals
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
@@ -229,29 +82,40 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 # Additions
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     dnf5 -y install \
+        adw-gtk3-theme \
         alsa-firmware \
         apr \
         apr-util \
-        adw-gtk3-theme \
+        bootc \
         cascadia-code-fonts \
         default-fonts-cjk-sans \
         distrobox \
         drm_info \
+        duperemove \
+        edid-decode \
         fastfetch \
         ffmpeg \
         ffmpegthumbnailer \
         fuse-libs \
         fzf \
+        glibc.i686 \
         google-noto-sans-balinese-fonts \
         google-noto-sans-cjk-fonts \
         google-noto-sans-javanese-fonts \
         google-noto-sans-sundanese-fonts \
         grub2-tools-extra \
         htop \
+        i2c-tools \
+        jetbrains-mono-fonts \
+        jq \
         just \
         kernel-tools \
+        libheif \
         libratbag-ratbagd \
+        libva \
+        libva-intel-media-driver \
         lshw \
+        mesa-libGLU \
         mpv \
         nerd-fonts \
         net-tools \
@@ -259,44 +123,36 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         nvtop \
         openrgb-udev-rules \
         openssl \
-        pam-u2f \
         pam_yubico \
+        pam-u2f \
         pamu2fcfg \
-        smartmontools \
-        solaar-udev \
-        symlinks \
-        tcpdump \
-        tmux \
-        traceroute \
-        vim \
-        wireguard-tools \
-        zstd \
-        bootc \
-        duperemove \
-        edid-decode \
-        glibc.i686 \
-        jetbrains-mono-fonts \
-        jq \
-        mesa-libGLU \
         patch \
         powertop \
         python3-pip \
         rsms-inter-fonts \
+        scx-scheds \
         setools \
+        smartmontools \
+        solaar-udev \
+        symlinks \
         sysfsutils \
+        tcpdump \
+        tmux \
+        traceroute \
         tuned \
         tuned-gtk \
         tuned-ppd \
         tuned-profiles-cpu-partitioning \
         tuned-utils \
-        i2c-tools \
         unrar \
+        vim \
         vulkan-tools \
+        wireguard-tools \
         wl-clipboard \
-        xrandr \
         x265 \
-        scx-scheds \
-        zsh && \
+        xrandr \
+        zsh \
+        zstd && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/mpv.desktop && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
@@ -322,6 +178,8 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         gnome-classic-session \
         gnome-shell-extension-background-logo \
         gnome-shell-extension-apps-menu && \
+    dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
+        switcheroo-control && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
