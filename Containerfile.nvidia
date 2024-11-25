@@ -1,7 +1,7 @@
 ARG BASE_IMAGE="ghcr.io/trgeiger/quark"
 ARG IMAGE_NAME="${IMAGE_NAME:-quark-open}"
-ARG QUARK_VERSION="${QUARK_VERSION:-40}"
-ARG KMOD_IMAGE_VERSION="${KMOD_IMAGE_VERSION:-40}"
+ARG QUARK_VERSION="${QUARK_VERSION:-41}"
+ARG KMOD_IMAGE_VERSION="${KMOD_IMAGE_VERSION:-41}"
 ARG NVIDIA_MODULE_TYPE="${NVIDIA_MODULE_TYPE:-nvidia-open}"
 ARG NVIDIA_VERSION="${NVIDIA_VERSION:-stable}"
 
@@ -15,7 +15,7 @@ ARG IMAGE_FLAVOR="${IMAGE_FLAVOR}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
 ARG KERNEL_FLAVOR="${KERNEL_FLAVOR}"
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
-ARG QUARK_VERSION="${QUARK_VERSION:-40}"
+ARG QUARK_VERSION="${QUARK_VERSION:-41}"
 ARG NVIDIA_VERSION="${NVIDIA_VERSION:-stable}"
 
 COPY tmp /tmp
@@ -25,20 +25,17 @@ RUN install -Dm644 tmp/private_key.priv /etc/pki/akmods/private/private_key.priv
 
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     --mount=type=bind,from=nvidia-akmods,src=/rpms,dst=/tmp/akmods-rpms \
-    ENABLED_REPOS="fedora,updates,updates-archive,rpmfusion-free,rpmfusion-nonfree,rpmfusion-free-updates,rpmfusion-nonfree-updates" && \
     if [[ "${NVIDIA_VERSION}" == "beta" ]]; then \
         # sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/tayler.repo \
         echo "Installing beta driver" && \
         cpm enable kwizart/nvidia-driver-rawhide && \
         sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/fedora-updates-testing.repo && \
-        rpm-ostree install rpmfusion-nonfree-release-rawhide && \
-        ENABLED_REPOS="$ENABLED_REPOS,updates-testing,rpmfusion-nonfree-rawhide" \
+        dnf5 -y install rpmfusion-nonfree-release-rawhide \
     ; else \
         echo "Installing stable driver" \
         # sed -i '0,/enabled=1/s//enabled=0/' /etc/yum.repos.d/tayler.repo \
     ; fi  && \
-    rpm-ostree install \
-    --enablerepo=$ENABLED_REPOS \
+    dnf5 -y install \
         xorg-x11-drv-nvidia-cuda \
         xorg-x11-drv-nvidia-cuda-libs \
         nvidia-vaapi-driver \
