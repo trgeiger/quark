@@ -31,8 +31,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         sentry/switcheroo-control_discrete \
         bieszczaders/kernel-cachyos \
         bieszczaders/kernel-cachyos-addons && \
-    cpm enable -m \
-        kylegospo/bazzite-multilib && \
     rm -rf /tmp/rpms/config/ublue-os-update-services.*.rpm && \
     dnf5 -y install \
         https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
@@ -226,9 +224,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         winetricks \
         mesa-vulkan-drivers.i686 \
         mesa-va-drivers.i686 \
-        gamescope.x86_64 \
-        gamescope-libs.i686 \
-        gamescope-shaders \ 
+        gamescope \
         vkBasalt.x86_64 \
         vkBasalt.i686 \
         mangohud.x86_64 \
