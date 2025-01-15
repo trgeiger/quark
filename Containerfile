@@ -86,6 +86,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         apr-util \
         bootc \
         cascadia-code-fonts \
+        cachyos-settings \
         default-fonts-cjk-sans \
         distrobox \
         drm_info \
