@@ -57,25 +57,18 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 # Removals
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     dnf5 -y remove \
-        #libavdevice-free \
-        #libavfilter-free \
-        #libavformat-free \
-        #ffmpeg-free \
-        #libpostproc-free \
-        #libswresample-free \
-        #libavutil-free \
-        #libavcodec-free \
-        #libswscale-free \
-        #google-noto-sans-cjk-vf-fonts \
-        #mesa-va-drivers \
-        #default-fonts-cjk-sans \
+        google-noto-sans-cjk-vf-fonts \
+        mesa-va-drivers \
+        default-fonts-cjk-sans \
         firefox \
         firefox-langpacks && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
-# Additions
+# Additions and swaps
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    dnf5 -y swap \
+        ffmpeg-free ffmpeg --allowerasing && \
     dnf5 -y install \
         adw-gtk3-theme \
         alsa-firmware \
@@ -90,7 +83,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         duperemove \
         edid-decode \
         fastfetch \
-        ffmpeg \
+        #ffmpeg \
         ffmpegthumbnailer \
         fuse-libs \
         fzf \
@@ -192,7 +185,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 
 # Gaming-specific changes
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    if [[ "${IMAGE_NAME}" == "quark" ]]; then \
+    if [[ "${IMAGE_NAME}" != "quark-cloud-dev" ]]; then \
     cpm enable ilyaz/LACT && \
     dnf5 -y install \
         lact-libadwaita \
