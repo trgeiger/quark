@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image_flavor: [main]
+        image_flavor: [silverblue, kinoite]
         base_name: [quark, quark-cloud-dev]
         fedora_version: [41]
         include:
@@ -41,7 +41,11 @@ jobs:
 
       - name: Matrix Variables
         run: |
-          echo "IMAGE_NAME=${{ matrix.base_name }}" >> $GITHUB_ENV
+          if [[ "${{ matrix.image_flavor }}" == "kinoite" ]]; then
+            echo "IMAGE_NAME=quark-plasma" >> $GITHUB_ENV
+          else 
+            echo "IMAGE_NAME=${{ matrix.base_name }}" >> $GITHUB_ENV
+          fi
 
       - name: Generate tags
         id: generate-tags
@@ -118,7 +122,7 @@ jobs:
           attempt_limit: 3
           attempt_delay: 15000
           command: |
-            podman pull quay.io/fedora-ostree-desktops/silverblue:${{ matrix.fedora_version }}
+            podman pull quay.io/fedora-ostree-desktops/${{ matrix.image_flavor }}:${{ matrix.fedora_version }}
 
       # Build image using Buildah action
       - name: Build Image
@@ -132,9 +136,9 @@ jobs:
             ${{ steps.generate-tags.outputs.alias_tags }}
           build-args: |
             IMAGE_NAME=${{ env.IMAGE_NAME }}
-            IMAGE_FLAVOR=${{ matrix.image_flavor }}
             IMAGE_VENDOR=${{ github.repository_owner }}
             FEDORA_MAJOR_VERSION=${{ matrix.fedora_version }}
+            BASE_IMAGE_NAME=${{ matrix.image_flavor }}
           labels: ${{ steps.meta.outputs.labels }}
           oci: false
           extra-args: |

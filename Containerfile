@@ -1,5 +1,4 @@
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
-ARG IMAGE_FLAVOR="${IMAGE_FLAVOR:-main}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
 ARG SOURCE_IMAGE="${SOURCE_IMAGE:-$BASE_IMAGE_NAME}"
 ARG BASE_IMAGE="quay.io/fedora-ostree-desktops/${SOURCE_IMAGE}"
@@ -7,12 +6,10 @@ ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-41}"
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS quark
 
+ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
 ARG IMAGE_NAME="${IMAGE_NAME:-quark}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
-ARG IMAGE_FLAVOR="${IMAGE_FLAVOR}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
-ARG KERNEL_FLAVOR="${KERNEL_FLAVOR}"
-ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-41}"
 
 COPY system_files /
@@ -60,18 +57,18 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 # Removals
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     dnf5 -y remove \
-        libavdevice-free \
-        libavfilter-free \
-        libavformat-free \
-        ffmpeg-free \
-        libpostproc-free \
-        libswresample-free \
-        libavutil-free \
-        libavcodec-free \
-        libswscale-free \
-        google-noto-sans-cjk-vf-fonts \
-        mesa-va-drivers \
-        default-fonts-cjk-sans \
+        #libavdevice-free \
+        #libavfilter-free \
+        #libavformat-free \
+        #ffmpeg-free \
+        #libpostproc-free \
+        #libswresample-free \
+        #libavutil-free \
+        #libavcodec-free \
+        #libswscale-free \
+        #google-noto-sans-cjk-vf-fonts \
+        #mesa-va-drivers \
+        #default-fonts-cjk-sans \
         firefox \
         firefox-langpacks && \
     /usr/libexec/containerbuild/cleanup.sh && \
@@ -156,8 +153,9 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
-# Gnome stuff
+# Desktop environment stuff
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+    if [[ "${BASE_IMAGE_NAME}" == "silverblue" ]]; then \
     dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:ublue-os:staging \
         gnome-shell && \
     dnf5 -y upgrade --repo tayler \
@@ -180,7 +178,17 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
         switcheroo-control && \
     /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
+    ostree container commit \
+    ; elif [[ "${BASE_IMAGE_NAME}" == "kinoite" ]]; then \
+    dnf5 -y install \
+        qt \
+        kdeplasma-addons && \
+    dnf5 -y remove \
+        plasma-welcome \
+        plasma-welcome-fedora && \
+    dnf5 -y upgrade --repo tayler \
+        qt6-qtbase \
+    ; fi
 
 # Gaming-specific changes
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
@@ -278,9 +286,7 @@ FROM quark as quark-cloud-dev
 
 ARG IMAGE_NAME="${IMAGE_NAME:-quark-cloud-dev}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
-ARG IMAGE_FLAVOR="${IMAGE_FLAVOR}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
-ARG KERNEL_FLAVOR="${KERNEL_FLAVOR}"
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION}"
 

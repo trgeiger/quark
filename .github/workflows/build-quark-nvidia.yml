@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image_flavor: [main]
+        image_flavor: [silverblue, kinoite]
         base_name: [quark-open, quark-closed]
         nvidia_version: [stable, beta]
         fedora_version: [41]
@@ -55,7 +55,13 @@ jobs:
 
       - name: Matrix Variables
         run: |
-          echo "IMAGE_NAME=${{ matrix.base_name }}" >> $GITHUB_ENV
+          if [[ "${{ matrix.image_flavor }}" == "kinoite" ]]; then
+            echo "IMAGE_NAME=${{ matrix.base_name }}-plasma" >> $GITHUB_ENV
+            echo "BASE_IMAGE=ghcr.io/trgeiger/quark-plasma" >> $GITHUB_ENV
+          else 
+            echo "IMAGE_NAME=${{ matrix.base_name }}" >> $GITHUB_ENV
+            echo "BASE_IMAGE=ghcr.io/trgeiger/quark" >> $GITHUB_ENV
+          fi 
           echo "TARGET"="quark" >> $GITHUB_ENV
 
       - name: Generate tags
@@ -137,7 +143,7 @@ jobs:
           attempt_limit: 3
           attempt_delay: 15000
           command: |
-            podman pull ${{ env.IMAGE_REGISTRY }}/quark:${{ env.QUARK_VERSION }}
+            podman pull ${{ env.BASE_IMAGE }}:${{ env.QUARK_VERSION }}
             podman pull ${{ env.IMAGE_REGISTRY }}/nvidia-kmod-${{ env.NVIDIA_MODULE_TYPE }}:${{ matrix.fedora_version }}-${{ matrix.nvidia_version }}
 
       # Build image using Buildah action
@@ -151,8 +157,9 @@ jobs:
           tags: |
             ${{ steps.generate-tags.outputs.alias_tags }}
           build-args: |
+            BASE_IMAGE=${{ env.BASE_IMAGE }}
+            BASE_IMAGE_NAME=${{ matrix.image_flavor }}
             IMAGE_NAME=${{ env.IMAGE_NAME }}
-            IMAGE_FLAVOR=${{ matrix.image_flavor }}
             IMAGE_VENDOR=${{ github.repository_owner }}
             QUARK_VERSION=${{ env.QUARK_VERSION }}
             KMOD_IMAGE_VERSION=${{ matrix.fedora_version }}
