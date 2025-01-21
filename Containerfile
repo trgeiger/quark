@@ -75,6 +75,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         apr \
         apr-util \
         bootc \
+        btrfsmaintenance \
         cascadia-code-fonts \
         cachyos-settings \
         default-fonts-cjk-sans \
