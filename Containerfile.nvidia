@@ -41,7 +41,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         libva-nvidia-driver \
         mesa-vulkan-drivers.i686 \
         /tmp/akmods-rpms/kmods/kmod-nvidia-*.rpm && \
-    KERNEL_VERSION="$(rpm -q kernel-cachyos --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" && \
+    KERNEL_VERSION="$(rpm -q kernel-cachyos-lts --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" && \
     modinfo -l /usr/lib/modules/${KERNEL_VERSION}/extra/nvidia/nvidia{,-drm,-modeset,-peermem,-uvm}.ko.xz && \
     rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json && \
     echo 'force_drivers+=" nvidia nvidia-drm nvidia-modeset nvidia-peermem nvidia-uvm "' > /usr/lib/dracut/dracut.conf.d/95-nvidia.conf
