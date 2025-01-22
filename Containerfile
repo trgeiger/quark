@@ -152,6 +152,8 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:ublue-os:staging \
         gnome-shell && \
     dnf5 -y upgrade --repo tayler \
+        gnome-control-center \
+        gnome-control-center-filesystem \
         mutter \
         mutter-common && \
     dnf5 -y install \
