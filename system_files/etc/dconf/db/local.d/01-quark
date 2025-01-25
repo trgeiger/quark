@@ -68,6 +68,7 @@ world-clock=false
 
 [org/gnome/mutter]
 experimental-features=['variable-refresh-rate', 'scale-monitor-framebuffer']
+check-alive-timeout='60000'
 
 [org/gtk/settings/file-chooser]
 sort-directories-first=true
