@@ -17,17 +17,19 @@ ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
 ARG QUARK_VERSION="${QUARK_VERSION:-41}"
 ARG NVIDIA_VERSION="${NVIDIA_VERSION:-stable}"
 
-COPY tmp /tmp
+COPY nvidia_files /
+# COPY tmp /tmp
 
-RUN install -Dm644 tmp/private_key.priv /etc/pki/akmods/private/private_key.priv && \
-    install -Dm644 /etc/pki/akmods/certs/quark-secure-boot.der /etc/pki/akmods/certs/public_key.der
+# RUN install -Dm644 tmp/private_key.priv /etc/pki/akmods/private/private_key.priv && \
+    # install -Dm644 /etc/pki/akmods/certs/quark-secure-boot.der /etc/pki/akmods/certs/public_key.der
 
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     --mount=type=bind,from=nvidia-akmods,src=/rpms,dst=/tmp/akmods-rpms \
     if [[ "${NVIDIA_VERSION}" == "beta" ]]; then \
+        dnf5 -y config-manager addrepo --from-repofile=https://developer.download.nvidia.com/compute/cuda/repos/fedora${QUARK_VERSION}/x86_64/cuda-fedora${QUARK_VERSION}.repo && \
         echo "Installing beta driver" && \
-        dnf5 -y install rpmfusion-nonfree-release-rawhide && \
-        ENABLED_REPO=rpmfusion-nonfree-rawhide \
+        # dnf5 -y install rpmfusion-nonfree-release-rawhide && \
+        ENABLED_REPO="tayler-nvidia" \
     ; else \
         echo "Installing stable driver" \
     ; fi  && \
