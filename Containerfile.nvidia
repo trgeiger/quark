@@ -37,6 +37,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     dnf5 -y install --enable-repo="$ENABLED_REPO"\
         xorg-x11-drv-nvidia-cuda \
         xorg-x11-drv-nvidia-cuda-libs \
+        xorg-x11-drv-nvidia-power \
         nvidia-vaapi-driver \
         libva-utils \
         vdpauinfo \
