@@ -178,6 +178,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     ; elif [[ "${BASE_IMAGE_NAME}" == "kinoite" ]]; then \
     dnf5 -y install \
         qt \
+        ptyxis \
         kdeplasma-addons && \
     dnf5 -y remove \
         plasma-welcome \
