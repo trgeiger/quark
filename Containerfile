@@ -173,6 +173,11 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         gnome-shell-extension-apps-menu && \
     dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
         switcheroo-control && \
+    cpm enable vulongm/vk-hdr-layer && \
+    dnf5 -y install \
+        vk-hdr-layer && \
+    sed -i '/^PRETTY_NAME/s/Silverblue/Quark/' /usr/lib/os-release && \
+    sed -i 's/^NAME=.*/NAME="Quark"/' /usr/lib/os-release && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit \
     ; elif [[ "${BASE_IMAGE_NAME}" == "kinoite" ]]; then \
@@ -184,12 +189,14 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         plasma-welcome \
         plasma-welcome-fedora && \
     dnf5 -y upgrade --repo tayler \
-        qt6-qtbase \
+        qt6-qtbase && \
+    sed -i '/^PRETTY_NAME/s/Kinoite/Quark Plasma/' /usr/lib/os-release && \
+    sed -i 's/^NAME=.*/NAME="Quark Plasma"/' /usr/lib/os-release \
     ; fi
 
 # Gaming-specific changes
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    if [[ "${IMAGE_NAME}" != "quark-cloud-dev" ]]; then \
+    if [[ "${IMAGE_NAME}" != *"quark-cloud-dev"* ]]; then \
     cpm enable ilyaz/LACT && \
     dnf5 -y install \
         lact-libadwaita \
@@ -231,6 +238,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         mesa-vulkan-drivers.i686 \
         mesa-va-drivers.i686 \
         gamescope \
+        gamescope-session-steam \
         vkBasalt.x86_64 \
         vkBasalt.i686 \
         mangohud.x86_64 \
@@ -268,8 +276,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     systemctl --global enable podman.socket && \
     systemctl --global enable systemd-tmpfiles-setup.service && \
     echo "import \"/usr/share/ublue-os/just/80-quark.just\"" >> /usr/share/ublue-os/justfile && \
-    sed -i '/^PRETTY_NAME/s/Silverblue/Quark/' /usr/lib/os-release && \
-    sed -i 's/^NAME=.*/NAME="Quark"/' /usr/lib/os-release && \
     fc-cache --system-only --really-force --verbose && \
     /usr/libexec/containerbuild/image-info && \
     /usr/libexec/containerbuild/build-initramfs && \
@@ -283,13 +289,14 @@ FROM quark as quark-cloud-dev
 
 ARG IMAGE_NAME="${IMAGE_NAME:-quark-cloud-dev}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
-ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
+ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"#
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION}"
 
 # Install Openshift tools -- oc, opm, kubectl, operator-sdk, odo, helm, crc
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    export VER=$(curl --silent -qI https://github.com/operator-framework/operator-sdk/releases/latest | \
+    export VER=$(curl --silent -qI https://github.com/oper    if [[ "${BASE_IMAGE_NAME}" == "silverblue" ]]; then \
+    ator-framework/operator-sdk/releases/latest | \
     awk -F '/' '/^location/ {print  substr($NF, 1, length($NF)-1)}') && \
     wget https://github.com/operator-framework/operator-sdk/releases/download/$VER/operator-sdk_linux_amd64 -O /usr/bin/operator-sdk && \
     chmod +x /usr/bin/operator-sdk && \
@@ -333,7 +340,12 @@ RUN cpm remove --all && \
     rm -f awscliv2.zip && \
     rm -f /usr/bin/README.md && \
     rm -f /usr/bin/LICENSE && \
-    sed -i '/^PRETTY_NAME/s/Quark/Quark Cloud Dev/' /usr/lib/os-release && \
-    sed -i 's/^NAME=.*/NAME="Quark Cloud Dev"/' /usr/lib/os-release && \
+    if [[ "${BASE_IMAGE_NAME}" == "silverblue" ]]; then \
+        sed -i '/^PRETTY_NAME/s/Quark/Quark Cloud Dev/' /usr/lib/os-release && \
+        sed -i 's/^NAME=.*/NAME="Quark Cloud Dev"/' /usr/lib/os-release \
+    ; elif [[ "${BASE_IMAGE_NAME}" == "kinoite" ]]; then \
+        sed -i '/^PRETTY_NAME/s/Quark Plasma/Quark Cloud Dev/' /usr/lib/os-release && \
+        sed -i 's/^NAME=.*/NAME="Quark Cloud Dev"/' /usr/lib/os-release \
+    ; fi && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit

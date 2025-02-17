@@ -43,7 +43,7 @@ jobs:
       - name: Set environment variables
         run: |
           if [[ "${{ matrix.image_flavor }}" == "kinoite" ]]; then
-            echo "IMAGE_NAME=quark-plasma" >> $GITHUB_ENV
+            echo "IMAGE_NAME=${{ matrix.base_name }}-plasma" >> $GITHUB_ENV
           else 
             echo "IMAGE_NAME=${{ matrix.base_name }}" >> $GITHUB_ENV
           fi
