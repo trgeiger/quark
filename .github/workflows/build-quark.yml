@@ -153,7 +153,7 @@ jobs:
           privkey: ${{ secrets.QUARK_PRIVKEY_18012024 }}
           pubkey: /etc/pki/akmods/certs/quark-secure-boot.der
           tags: ${{ steps.build_image.outputs.tags }}
-          kernel_suffix: cachyos-lts
+          kernel_suffix: cachyos
 
       # Workaround bug where capital letters in your GitHub username make it impossible to push to GHCR.
       # https://github.com/macbre/push-to-ghcr/issues/12

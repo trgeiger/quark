@@ -16,6 +16,9 @@ if [[ "${NVIDIA_VERSION}" == "beta" ]]; then
         echo "Installing from personal repo\n"
         curl -Lo /etc/yum.repos.d/tayler-nvidia.repo https://raw.githubusercontent.com/trgeiger/nvidia-kmod-cache/refs/heads/main/tayler-nvidia.repo
     else
+        echo "Installing from kwizart repo\n"
+        dnf5 copr enable kwizart/nvidia-driver-rawhide
+        sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/fedora-updates-testing.repo
         dnf5 -y install rpmfusion-nonfree-release-rawhide
         ENABLED_REPO="rpmfusion-nonfree-rawhide"
     fi

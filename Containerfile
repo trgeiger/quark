@@ -47,9 +47,9 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
             kernel-modules-core \
             kernel-modules-extra \
         --install \
-            kernel-cachyos-lts \
+            kernel-cachyos \
         --install \
-            kernel-cachyos-lts-devel-matched && \
+            kernel-cachyos-devel-matched && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
