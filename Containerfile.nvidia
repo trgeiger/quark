@@ -5,6 +5,7 @@ ARG QUARK_VERSION="${QUARK_VERSION:-41}"
 ARG KMOD_IMAGE_VERSION="${KMOD_IMAGE_VERSION:-41}"
 ARG NVIDIA_MODULE_TYPE="${NVIDIA_MODULE_TYPE:-nvidia-open}"
 ARG NVIDIA_VERSION="${NVIDIA_VERSION:-stable}"
+ARG KERNEL_NAME="${KERNEL_NAME:-kernel-cachyos}"
 
 FROM ghcr.io/trgeiger/nvidia-kmod-${NVIDIA_MODULE_TYPE}:${KMOD_IMAGE_VERSION}-${NVIDIA_VERSION} AS nvidia-akmods
 
@@ -16,6 +17,7 @@ ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
 ARG QUARK_VERSION="${QUARK_VERSION:-41}"
 ARG NVIDIA_VERSION="${NVIDIA_VERSION:-stable}"
+ARG KERNEL_NAME="${KERNEL_NAME:-kernel-cachyos}"
 ARG USE_PERSONAL_REPO="${USE_PERSONAL_REPO:-false}"
 
 COPY tmp /tmp
@@ -27,7 +29,7 @@ RUN install -Dm644 tmp/private_key.priv /etc/pki/akmods/private/private_key.priv
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     --mount=type=bind,from=nvidia-akmods,src=/rpms,dst=/tmp/akmods-rpms \
     /tmp/install-nvidia.sh "${IMAGE_NAME}" "${NVIDIA_VERSION}" "${USE_PERSONAL_REPO}" && \
-    KERNEL_VERSION="$(rpm -q kernel-cachyos --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" && \
+    KERNEL_VERSION="$(rpm -q ${KERNEL_NAME} --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" && \
     modinfo -l /usr/lib/modules/${KERNEL_VERSION}/extra/nvidia/nvidia{,-drm,-modeset,-peermem,-uvm}.ko.xz && \
     rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json && \
     echo 'force_drivers+=" nvidia nvidia-drm nvidia-modeset nvidia-peermem nvidia-uvm "' > /usr/lib/dracut/dracut.conf.d/95-nvidia.conf

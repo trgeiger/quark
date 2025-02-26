@@ -2,6 +2,7 @@ ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
 ARG SOURCE_IMAGE="${SOURCE_IMAGE:-$BASE_IMAGE_NAME}"
 ARG BASE_IMAGE="quay.io/fedora-ostree-desktops/${SOURCE_IMAGE}"
+ARG KERNEL_NAME="${KERNEL_NAME:-kernel-cachyos}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-41}"
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS quark
@@ -10,6 +11,7 @@ ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
 ARG IMAGE_NAME="${IMAGE_NAME:-quark}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
+ARG KERNEL_NAME="${KERNEL_NAME:-kernel-cachyos}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-41}"
 
 COPY system_files /
@@ -47,9 +49,9 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
             kernel-modules-core \
             kernel-modules-extra \
         --install \
-            kernel-cachyos \
+            "${KERNEL_NAME}" \
         --install \
-            kernel-cachyos-devel-matched && \
+            "${KERNEL_NAME}"-devel-matched && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
