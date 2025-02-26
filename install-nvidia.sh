@@ -19,6 +19,7 @@ if [[ "${NVIDIA_VERSION}" == "beta" ]]; then
         echo "Installing from kwizart repo\n"
         dnf5 -y copr enable kwizart/nvidia-driver-rawhide
         sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/fedora-updates-testing.repo
+        # Install fake-grubby for beta until f42
         dnf5 -y install rpmfusion-nonfree-release-rawhide fake-grubby
         ENABLED_REPO="rpmfusion-nonfree-rawhide"
     fi
