@@ -30,7 +30,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     --mount=type=bind,from=nvidia-akmods,src=/rpms,dst=/tmp/akmods-rpms \
     /tmp/install-nvidia.sh "${IMAGE_NAME}" "${NVIDIA_VERSION}" "${USE_PERSONAL_REPO}" && \
     KERNEL_VERSION="$(rpm -q ${KERNEL_NAME} --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" && \
-    modinfo -l /usr/lib/modules/${KERNEL_VERSION}/extra/nvidia/nvidia{,-drm,-modeset,-peermem,-uvm}.ko.xz && \
+    modinfo -l /usr/lib/modules/${KERNEL_VERSION}/extra/nvidia/nvidia{,-drm,-modeset,-peermem,-uvm}.ko* && \
     rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json && \
     echo 'force_drivers+=" nvidia nvidia-drm nvidia-modeset nvidia-peermem nvidia-uvm "' > /usr/lib/dracut/dracut.conf.d/95-nvidia.conf
 

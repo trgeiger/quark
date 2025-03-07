@@ -75,7 +75,7 @@ jobs:
              BUILD_TAGS=("${FEDORA_VERSION}" "${FEDORA_VERSION}-${TIMESTAMP}")
              BUILD_TAGS+=("${FEDORA_VERSION}-stable" "${FEDORA_VERSION}-stable-${TIMESTAMP}")
              if [[ "${{ matrix.is_latest_version }}" == "true" ]]; then
-                 BUILD_TAGS+=("latest" "stable")
+                 BUILD_TAGS+=("latest")
                  echo "DEFAULT_TAG=latest" >> $GITHUB_ENV
              else
                  echo "DEFAULT_TAG=${FEDORA_VERSION}" >> $GITHUB_ENV

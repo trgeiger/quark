@@ -85,10 +85,10 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         duperemove \
         edid-decode \
         fastfetch \
-        #ffmpeg \
         ffmpegthumbnailer \
         fuse-libs \
         fzf \
+        gh \
         glibc.i686 \
         google-noto-sans-balinese-fonts \
         google-noto-sans-cjk-fonts \
