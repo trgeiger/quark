@@ -31,7 +31,7 @@ jobs:
         # image_flavor: [silverblue, kinoite]
         image_flavor: [silverblue]
         base_name: [quark, quark-cloud-dev]
-        fedora_version: [41, 42]
+        fedora_version: [42]
         include:
           - fedora_version: 42
             is_latest_version: true

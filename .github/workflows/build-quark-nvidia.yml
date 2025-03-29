@@ -31,7 +31,7 @@ jobs:
         image_flavor: [silverblue]
         base_name: [quark-open, quark-closed]
         nvidia_version: [stable, beta]
-        fedora_version: [41, 42]
+        fedora_version: [42]
         include:
           - fedora_version: 42
             is_latest_version: true
