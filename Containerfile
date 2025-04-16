@@ -162,7 +162,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         gnome-randr-rust \
         gnome-epub-thumbnailer \
         gnome-tweaks \
-        gnome-session-xsession \
         gnome-shell-extension-blur-my-shell \
         gnome-shell-extension-caffeine \
         gnome-shell-extension-just-perfection \
