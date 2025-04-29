@@ -198,7 +198,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 # Gaming-specific changes
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     if [[ "${IMAGE_NAME}" != *"quark-cloud-dev"* ]]; then \
-    dnf5 -y install $(curl -s https://api.github.com/repos/ilya-zlobintsev/LACT/releases | jq -r '.[0].assets[] | select(.name | test("lact-libadwaita.*41.rpm")) | .browser_download_url') && \
+    dnf5 -y install $(curl -s https://api.github.com/repos/ilya-zlobintsev/LACT/releases | jq -r '.[0].assets[] | select(.name | test("lact-libadwaita.*42.rpm")) | .browser_download_url') && \
     dnf5 -y install \
         jupiter-sd-mounting-btrfs \
         at-spi2-core.i686 \
