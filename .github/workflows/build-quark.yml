@@ -28,8 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # image_flavor: [silverblue, kinoite]
-        image_flavor: [silverblue]
+        image_flavor: [silverblue, kinoite]
         base_name: [quark, quark-cloud-dev]
         fedora_version: [42]
         include:
