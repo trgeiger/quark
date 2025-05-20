@@ -174,9 +174,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         gnome-shell-extension-apps-menu && \
     dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
         switcheroo-control && \
-    cpm enable vulongm/vk-hdr-layer && \
-    dnf5 -y install \
-        vk-hdr-layer && \
     sed -i '/^PRETTY_NAME/s/Silverblue/Quark/' /usr/lib/os-release && \
     sed -i 's/^NAME=.*/NAME="Quark"/' /usr/lib/os-release && \
     /usr/libexec/containerbuild/cleanup.sh && \
