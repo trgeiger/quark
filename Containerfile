@@ -187,7 +187,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         plasma-welcome \
         plasma-welcome-fedora && \
     dnf5 -y upgrade --repo tayler \
-        qt6-qtbase && \
+        kwin && \
     sed -i '/^PRETTY_NAME/s/Kinoite/Quark Plasma/' /usr/lib/os-release && \
     sed -i 's/^NAME=.*/NAME="Quark Plasma"/' /usr/lib/os-release \
     ; fi
