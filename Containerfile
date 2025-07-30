@@ -331,6 +331,14 @@ RUN echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft
         /usr/libexec/containerbuild/cleanup.sh && \
         ostree container commit
 
+RUN echo -e "[google-cloud-cli]\nname=Google Cloud CLI\nbaseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el9-x86_64\nenabled=1\ngpgcheck=1\nrepo_gpgcheck=0\ngpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg" > /etc/yum.repos.d/google-cloud-sdk.repo && \
+    dnf5 -y install \
+        libxcrypt-compat.x86_64 \
+        google-cloud-cli \
+        nodejs-npm && \
+    ostree container commit
+    
+
 RUN cpm remove --all && \
     rm -f get_helm.sh && \
     rm -rf aws && \
