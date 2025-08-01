@@ -154,8 +154,8 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:ublue-os:staging \
         gnome-shell && \
     dnf5 -y upgrade --repo tayler \
-        gnome-control-center \
-        gnome-control-center-filesystem \
+        #gnome-control-center \
+        #gnome-control-center-filesystem \
         mutter \
         mutter-common && \
     dnf5 -y install \
@@ -195,6 +195,8 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 # Gaming-specific changes
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     if [[ "${IMAGE_NAME}" != *"quark-cloud-dev"* ]]; then \
+    dnf5 -y install \
+        $(timeout 30 curl -s "https://api.github.com/repos/PancakeTAS/lsfg-vk/releases/latest" | grep "browser_download_url" | grep "lsfg-vk.*x86_64\.rpm" | cut -d '"' -f 4 || echo "") && \
     # dnf5 -y install $(curl -s https://api.github.com/repos/ilya-zlobintsev/LACT/releases | jq -r '.[0].assets[] | select(.name | test("lact-libadwaita.*42.rpm")) | .browser_download_url') && \
     dnf5 -y install \
         jupiter-sd-mounting-btrfs \
