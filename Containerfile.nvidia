@@ -39,7 +39,10 @@ RUN --mount=type=cache,dst=/var/cache \
     rm -f /usr/share/vulkan/icd.d/nouveau_icd.*.json && \
     echo 'force_drivers+=" nvidia nvidia-drm nvidia-modeset nvidia-peermem nvidia-uvm "' > /usr/lib/dracut/dracut.conf.d/95-nvidia.conf
 
-RUN rm -f /etc/pki/akmods/private/private_key.priv && \
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
+    rm -f /etc/pki/akmods/private/private_key.priv && \
     rm -f /etc/pki/akmods/certs/public_key.der && \
     /ctx/build-initramfs && \
     /ctx/cleanup && \

@@ -32,12 +32,10 @@ dnf5 -y install --enable-repo="$ENABLED_REPO" \
     xorg-x11-drv-nvidia-cuda \
     xorg-x11-drv-nvidia-cuda-libs \
     xorg-x11-drv-nvidia-power \
-    nvidia-vaapi-driver \
     nvidia-container-toolkit \
     nvidia-container-toolkit-selinux \
     libva-utils \
     vdpauinfo \
     libva-nvidia-driver \
-    mesa-vulkan-drivers.i686 \
     /tmp/akmods-rpms/kmods/kmod-nvidia-*.rpm
 
