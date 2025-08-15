@@ -3,3 +3,4 @@ name=Personal
 baseurl=https://filedn.com/ldJMkp18B3QJKvJJaukrBzH/repo/fedora/releases/$releasever/$basearch
 enabled=1
 gpgcheck=0
+priority=95

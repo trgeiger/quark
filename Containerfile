@@ -1,9 +1,12 @@
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-silverblue}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
-ARG SOURCE_IMAGE="${SOURCE_IMAGE:-$BASE_IMAGE_NAME}"
-ARG BASE_IMAGE="quay.io/fedora-ostree-desktops/${SOURCE_IMAGE}"
+ARG SOURCE_IMAGE="${SOURCE_IMAGE:-fedora-$BASE_IMAGE_NAME}"
+ARG BASE_IMAGE="quay.io/fedora/${SOURCE_IMAGE}"
 ARG KERNEL_NAME="${KERNEL_NAME:-kernel-cachyos}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-42}"
+
+FROM scratch AS ctx
+COPY build_files /
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS quark
 
@@ -15,60 +18,65 @@ ARG KERNEL_NAME="${KERNEL_NAME:-kernel-cachyos}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-42}"
 
 COPY system_files /
-COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms/config
 
 # Update packages
 RUN dnf5 -y upgrade
 
 # Setup repos and ublue-os config rpms
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
-    cpm enable \
-        che/nerd-fonts \
-        kylegospo/bazzite \
-        ublue-os/staging \
-        sentry/switcheroo-control_discrete \
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
+    dnf5 -y install dnf5-plugins && \
+    for copr in \
+        bazzite-org/bazzite \
         bieszczaders/kernel-cachyos \
-        bieszczaders/kernel-cachyos-addons && \
-    rm -rf /tmp/rpms/config/ublue-os-update-services.*.rpm && \
+        bieszczaders/kernel-cachyos-addons \
+        ublue-os/staging; \
+    do \
+        echo "Enabling copr: $copr"; \
+        dnf5 -y copr enable $copr; \
+        dnf5 -y config-manager setopt copr:copr.fedorainfracloud.org:${copr////:}.priority=98 ;\
+    done && unset -v copr && \
+    if [[ "${FEDORA_MAJOR_VERSION}" == "43" ]]; then \
+        dnf5 -y config-manager setopt "*fedora*".exclude="gdk-pixbuf2-*" \
+    ; fi && \
     dnf5 -y install \
         https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
         https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm \
-        /tmp/rpms/config/*.rpm \
+        # /tmp/rpms/config/*.rpm \
         fedora-repos-archive && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
+    /ctx/cleanup
 
 # Install CachyOS kernel
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    rpm-ostree cliwrap install-to-root / && \
-    rpm-ostree override remove \
-            kernel \
-            kernel-core \
-            kernel-modules \
-            kernel-modules-core \
-            kernel-modules-extra \
-        --install \
-            "${KERNEL_NAME}" \
-        --install \
-            "${KERNEL_NAME}"-devel-matched && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
-
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
+    dnf5 -y remove --no-autoremove kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra kernel-tools kernel-tools-libs kernel-uki-virt && \
+    dnf5 -y install \
+        "${KERNEL_NAME}"-modules && \
+    dnf5 -y install \
+        "${KERNEL_NAME}" \
+        "${KERNEL_NAME}"-core \
+        "${KERNEL_NAME}"-devel \
+        "${KERNEL_NAME}"-devel-matched && \
+    /ctx/cleanup
 
 # Removals
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
     dnf5 -y remove \
         google-noto-sans-cjk-vf-fonts \
         mesa-va-drivers \
         default-fonts-cjk-sans \
         firefox \
         firefox-langpacks && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
+    /ctx/cleanup
 
 # Additions and swaps
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
     dnf5 -y swap \
         ffmpeg-free ffmpeg --allowerasing && \
     dnf5 -y install \
@@ -108,7 +116,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         lshw \
         mesa-libGLU \
         mpv \
-        nerd-fonts \
         net-tools \
         nvme-cli \
         nvtop \
@@ -145,22 +152,21 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         zsh \
         zstd && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/mpv.desktop && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
+    /ctx/cleanup
 
 # Desktop environment stuff
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
     if [[ "${BASE_IMAGE_NAME}" == "silverblue" ]]; then \
     dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:ublue-os:staging \
         gnome-shell && \
-    dnf5 -y upgrade --repo tayler \
+    # dnf5 -y upgrade --repo tayler \
         #gnome-control-center \
         #gnome-control-center-filesystem \
-        mutter \
-        mutter-common && \
+        # mutter \
+        # mutter-common && \
     dnf5 -y install \
-        gnome-randr-rust \
-        gnome-epub-thumbnailer \
         gnome-tweaks \
         gnome-shell-extension-blur-my-shell \
         gnome-shell-extension-caffeine \
@@ -172,12 +178,11 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         gnome-classic-session \
         gnome-shell-extension-background-logo \
         gnome-shell-extension-apps-menu && \
-    dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
-        switcheroo-control && \
+    # dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
+        # switcheroo-control && \
     sed -i '/^PRETTY_NAME/s/Silverblue/Quark/' /usr/lib/os-release && \
     sed -i 's/^NAME=.*/NAME="Quark"/' /usr/lib/os-release && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit \
+    /ctx/cleanup \
     ; elif [[ "${BASE_IMAGE_NAME}" == "kinoite" ]]; then \
     dnf5 -y install \
         qt \
@@ -186,74 +191,40 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     dnf5 -y remove \
         plasma-welcome \
         plasma-welcome-fedora && \
-    dnf5 -y upgrade --repo tayler \
-        kwin && \
+    # dnf5 -y upgrade --repo tayler \
+        # kwin && \
     sed -i '/^PRETTY_NAME/s/Kinoite/Quark Plasma/' /usr/lib/os-release && \
     sed -i 's/^NAME=.*/NAME="Quark Plasma"/' /usr/lib/os-release \
     ; fi
 
 # Gaming-specific changes
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
     if [[ "${IMAGE_NAME}" != *"quark-cloud-dev"* ]]; then \
     dnf5 -y install \
         $(timeout 30 curl -s "https://api.github.com/repos/PancakeTAS/lsfg-vk/releases/latest" | grep "browser_download_url" | grep "lsfg-vk.*x86_64\.rpm" | cut -d '"' -f 4 || echo "") && \
-    # dnf5 -y install $(curl -s https://api.github.com/repos/ilya-zlobintsev/LACT/releases | jq -r '.[0].assets[] | select(.name | test("lact-libadwaita.*42.rpm")) | .browser_download_url') && \
     dnf5 -y install \
-        jupiter-sd-mounting-btrfs \
-        at-spi2-core.i686 \
-        atk.i686 \
-        vulkan-loader.i686 \
-        alsa-lib.i686 \
-        fontconfig.i686 \
-        gtk2.i686 \
-        libICE.i686 \
-        libnsl.i686 \
-        libxcrypt-compat.i686 \
-        libpng12.i686 \
-        libXext.i686 \
-        libXinerama.i686 \
-        libXtst.i686 \
-        libXScrnSaver.i686 \
-        NetworkManager-libnm.i686 \
-        nss.i686 \
-        pulseaudio-libs.i686 \
-        libcurl.i686 \
-        systemd-libs.i686 \
-        libva.i686 \
-        libvdpau.i686 \
-        libdbusmenu-gtk3.i686 \
-        libatomic.i686 \
-        pipewire-alsa.i686 \
-        gobject-introspection \
-        clinfo \
-        steam \
-        wine-core.x86_64 \
-        wine-core.i686 \
-        wine-pulseaudio.x86_64 \
-        wine-pulseaudio.i686 \
-        libFAudio.x86_64 \
-        libFAudio.i686 \
-        winetricks \
-        mesa-vulkan-drivers.i686 \
-        mesa-va-drivers.i686 \
         gamescope \
         gamescope-session-steam \
-        vkBasalt.x86_64 \
-        vkBasalt.i686 \
-        mangohud.x86_64 \
-        mangohud.i686 \
+        dbus-x11 \
+        libFAudio.x86_64 \
+        libFAudio.i686 \
+        mangohud \
         protontricks \
-        intel-undervolt && \
-    sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/yad-icon-browser.desktop && \
-    sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/winetricks.desktop && \
+        intel-undervolt \
+        VK_hdr_layer && \
+    dnf5 -y --setopt=install_weak_deps=False install \
+        steam && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/protontricks.desktop && \
-    # systemctl enable lactd && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit \
+    sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/yad-icon-browser.desktop && \
+    /ctx/cleanup \
     ; fi
 
 # run post-install tasks and clean up
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
     mkdir -p /var/tmp && chmod 1777 /var/tmp && \
     rm -f /etc/pki/akmods/private/private_key.priv && \
     rm -f /etc/pki/akmods/certs/public_key.der && \
@@ -263,6 +234,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     rm -f /usr/share/applications/shredder.desktop && \
     mkdir -p /usr/etc/flatpak/remotes.d && \
     wget -q https://dl.flathub.org/repo/flathub.flatpakrepo -P /usr/etc/flatpak/remotes.d && \
+    sed -i 's|^ExecStart=.*|ExecStart=/usr/libexec/rtkit-daemon --no-canary|' /usr/lib/systemd/system/rtkit-daemon.service && \
     sed -i 's@Name=tuned-gui@Name=TuneD Manager@g' /usr/share/applications/tuned-gui.desktop && \
     curl -Lo /tmp/starship.tar.gz "https://github.com/starship/starship/releases/latest/download/starship-x86_64-unknown-linux-gnu.tar.gz" && \
     tar -xzf /tmp/starship.tar.gz -C /tmp && \
@@ -276,11 +248,10 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     systemctl --global enable systemd-tmpfiles-setup.service && \
     echo "import \"/usr/share/ublue-os/just/80-quark.just\"" >> /usr/share/ublue-os/justfile && \
     fc-cache --system-only --really-force --verbose && \
-    /usr/libexec/containerbuild/image-info && \
-    /usr/libexec/containerbuild/build-initramfs && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    mkdir -p /var/tmp && chmod 1777 /var/tmp && \
-    ostree container commit
+    /ctx/image-info && \
+    /ctx/build-initramfs && \
+    /ctx/cleanup && \
+    /ctx/finalize 
 
 
 # cloud development build
@@ -293,7 +264,9 @@ ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION}"
 
 # Install Openshift tools -- oc, opm, kubectl, operator-sdk, odo, helm, crc
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
     export VER=$(curl --silent -qI https://github.com/operator-framework/operator-sdk/releases/latest | \
     awk -F '/' '/^location/ {print  substr($NF, 1, length($NF)-1)}') && \
     curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" -o /usr/bin/kubectl && \
@@ -304,25 +277,31 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/helm/latest/helm-linux-amd64 -o /usr/bin/helm && chmod +x /usr/bin/helm && \
     curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/odo/latest/odo-linux-amd64 -o /usr/bin/odo && chmod +x /usr/bin/odo && \
     curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/crc/latest/crc-linux-amd64.tar.xz | tar xfJ - --strip-components 1 -C /usr/bin && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
+    /ctx/cleanup
 
 
 # Install Kind
-RUN curl -Lo ./kind "https://github.com/kubernetes-sigs/kind/releases/latest/download/kind-$(uname)-amd64" && \
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
+    curl -Lo ./kind "https://github.com/kubernetes-sigs/kind/releases/latest/download/kind-$(uname)-amd64" && \
     chmod +x ./kind && \
     mv ./kind /usr/bin/kind && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
+    /ctx/cleanup
 
 # Install awscli
-RUN curl -SL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip && \
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
+    curl -SL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip && \
     unzip awscliv2.zip && \
     ./aws/install --bin-dir /usr/bin --install-dir /usr/bin && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
+    /ctx/cleanup
 
-RUN echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo && rpm --import https://packages.microsoft.com/keys/microsoft.asc && \
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
+    echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo && rpm --import https://packages.microsoft.com/keys/microsoft.asc && \
     dnf5 -y install \
         code \
         make \
@@ -330,18 +309,18 @@ RUN echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft
         libvirt \
         virt-manager && \
         rm -f /var/lib/unbound/root.key && \
-        /usr/libexec/containerbuild/cleanup.sh && \
-        ostree container commit
+    /ctx/cleanup
 
 RUN echo -e "[google-cloud-cli]\nname=Google Cloud CLI\nbaseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el9-x86_64\nenabled=1\ngpgcheck=1\nrepo_gpgcheck=0\ngpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg" > /etc/yum.repos.d/google-cloud-sdk.repo && \
     dnf5 -y install \
         libxcrypt-compat.x86_64 \
         google-cloud-cli \
-        nodejs-npm && \
-    ostree container commit
+        nodejs-npm
     
 
-RUN cpm remove --all && \
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
     rm -f get_helm.sh && \
     rm -rf aws && \
     rm -f awscliv2.zip && \
@@ -349,5 +328,4 @@ RUN cpm remove --all && \
     rm -f /usr/bin/LICENSE && \
     sed -i '/^PRETTY_NAME/s/Quark/Quark Cloud Dev/' /usr/lib/os-release && \
     sed -i '/^NAME/s/Quark/Quark Cloud Dev/' /usr/lib/os-release && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
+    /ctx/cleanup

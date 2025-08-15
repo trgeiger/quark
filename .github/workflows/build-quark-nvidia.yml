@@ -13,7 +13,7 @@ on:
 
 env:
     IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
-    USE_PERSONAL_REPO: true
+    USE_PERSONAL_REPO: false
 
 jobs:
   push-ghcr:
@@ -30,9 +30,9 @@ jobs:
         image_flavor: [silverblue, kinoite]
         base_name: [quark-open, quark-closed]
         nvidia_version: [stable, beta]
-        fedora_version: [42]
+        fedora_version: [42, 43]
         include:
-          - fedora_version: 42
+          - fedora_version: 43
             is_latest_version: true
     steps: 
       - name: Define NVIDIA variables

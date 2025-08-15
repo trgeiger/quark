@@ -7,6 +7,9 @@ ARG NVIDIA_MODULE_TYPE="${NVIDIA_MODULE_TYPE:-nvidia-open}"
 ARG NVIDIA_VERSION="${NVIDIA_VERSION:-stable}"
 ARG KERNEL_NAME="${KERNEL_NAME:-kernel-cachyos}"
 
+FROM scratch AS ctx
+COPY build_files /
+
 FROM ghcr.io/trgeiger/nvidia-kmod-${NVIDIA_MODULE_TYPE}:${KMOD_IMAGE_VERSION}-${NVIDIA_VERSION} AS nvidia-akmods
 
 FROM ${BASE_IMAGE}:${QUARK_VERSION} AS quark
@@ -26,7 +29,9 @@ COPY install-nvidia.sh /tmp/
 RUN install -Dm644 tmp/private_key.priv /etc/pki/akmods/private/private_key.priv && \
     install -Dm644 /etc/pki/akmods/certs/quark-secure-boot.der /etc/pki/akmods/certs/public_key.der
 
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=bind,from=nvidia-akmods,src=/rpms,dst=/tmp/akmods-rpms \
     /tmp/install-nvidia.sh "${IMAGE_NAME}" "${NVIDIA_VERSION}" "${USE_PERSONAL_REPO}" && \
     KERNEL_VERSION="$(rpm -q ${KERNEL_NAME} --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" && \
@@ -36,6 +41,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 
 RUN rm -f /etc/pki/akmods/private/private_key.priv && \
     rm -f /etc/pki/akmods/certs/public_key.der && \
-    /usr/libexec/containerbuild/build-initramfs && \
-    /usr/libexec/containerbuild/cleanup.sh && \
+    /ctx/build-initramfs && \
+    /ctx/cleanup && \
     ostree container commit
