@@ -26,17 +26,12 @@ RUN dnf5 -y upgrade
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
-    dnf5 -y install dnf5-plugins && \
-    for copr in \
-        bazzite-org/bazzite \
+    wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
+    cpm enable \
+        kylegospo/bazzite \
+        ublue-os/staging \
         bieszczaders/kernel-cachyos \
-        bieszczaders/kernel-cachyos-addons \
-        ublue-os/staging; \
-    do \
-        echo "Enabling copr: $copr"; \
-        dnf5 -y copr enable $copr; \
-        dnf5 -y config-manager setopt copr:copr.fedorainfracloud.org:${copr////:}.priority=98 ;\
-    done && unset -v copr && \
+        bieszczaders/kernel-cachyos-addons && \
     if [[ "${FEDORA_MAJOR_VERSION}" == "43" ]]; then \
         dnf5 -y config-manager setopt "*fedora*".exclude="gdk-pixbuf2-*" \
     ; fi && \
@@ -226,6 +221,11 @@ RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
     mkdir -p /var/tmp && chmod 1777 /var/tmp && \
+    cpm disable \
+        kylegospo/bazzite \
+        ublue-os/staging \
+        bieszczaders/kernel-cachyos \
+        bieszczaders/kernel-cachyos-addons && \
     rm -f /etc/pki/akmods/private/private_key.priv && \
     rm -f /etc/pki/akmods/certs/public_key.der && \
     rm -f /usr/share/vulkan/icd.d/lvp_icd.*.json && \
@@ -321,6 +321,7 @@ RUN echo -e "[google-cloud-cli]\nname=Google Cloud CLI\nbaseurl=https://packages
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
+    cpm remove --all && \
     rm -f get_helm.sh && \
     rm -rf aws && \
     rm -f awscliv2.zip && \
