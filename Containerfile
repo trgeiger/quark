@@ -104,6 +104,7 @@ RUN --mount=type=cache,dst=/var/cache \
         jq \
         just \
         kernel-tools \
+        koji-tool \
         libheif \
         libratbag-ratbagd \
         libva \
