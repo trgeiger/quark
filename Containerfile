@@ -26,15 +26,15 @@ RUN dnf5 -y upgrade
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
-    wget https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm -O /usr/bin/cpm && chmod +x /usr/bin/cpm && \
+    curl -Lo /usr/bin/cpm https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm && chmod +x /usr/bin/cpm && \
     cpm enable \
         kylegospo/bazzite \
         ublue-os/staging \
         bieszczaders/kernel-cachyos \
         bieszczaders/kernel-cachyos-addons && \
-    if [[ "${FEDORA_MAJOR_VERSION}" == "43" ]]; then \
-        dnf5 -y config-manager setopt "*fedora*".exclude="gdk-pixbuf2-*" \
-    ; fi && \
+    # if [[ "${FEDORA_MAJOR_VERSION}" == "43" ]]; then \
+    #     dnf5 -y config-manager setopt "*fedora*".exclude="gdk-pixbuf2-*" \
+    # ; fi && \
     dnf5 -y install \
         https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
         https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm \
@@ -234,11 +234,11 @@ RUN --mount=type=cache,dst=/var/cache \
     rm -f /usr/share/applications/nvtop.desktop && \
     rm -f /usr/share/applications/shredder.desktop && \
     mkdir -p /usr/etc/flatpak/remotes.d && \
-    wget -q https://dl.flathub.org/repo/flathub.flatpakrepo -P /usr/etc/flatpak/remotes.d && \
+    curl -Lo /usr/etc/flatpak/remotes.d/flathub.flatpakrepo https://dl.flathub.org/repo/flathub.flatpakrepo && \
     sed -i 's|^ExecStart=.*|ExecStart=/usr/libexec/rtkit-daemon --no-canary|' /usr/lib/systemd/system/rtkit-daemon.service && \
     sed -i 's@Name=tuned-gui@Name=TuneD Manager@g' /usr/share/applications/tuned-gui.desktop && \
     curl -Lo /tmp/starship.tar.gz "https://github.com/starship/starship/releases/latest/download/starship-x86_64-unknown-linux-musl.tar.gz" && \
-    tar -xzf /tmp/starship.tar.gz -C /tmp && \
+    tar -xf /tmp/starship.tar.gz -C /tmp && \
     install -c -m 0755 /tmp/starship /usr/bin && \
     echo 'eval "$(starship init bash)"' >> /etc/bashrc && \
     echo 'eval "$(starship init zsh)"' >> /etc/zshrc && \
@@ -272,7 +272,7 @@ RUN --mount=type=cache,dst=/var/cache \
     awk -F '/' '/^location/ {print  substr($NF, 1, length($NF)-1)}') && \
     curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" -o /usr/bin/kubectl && \
     chmod +x /usr/bin/kubectl && \
-    wget https://github.com/operator-framework/operator-sdk/releases/download/$VER/operator-sdk_linux_amd64 -O /usr/bin/operator-sdk && \
+    curl -Lo /usr/bin/operator-sdk https://github.com/operator-framework/operator-sdk/releases/download/$VER/operator-sdk_linux_amd64 && \
     chmod +x /usr/bin/operator-sdk && \
     curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/opm-linux.tar.gz | tar xvzf - -C /usr/bin && \
     curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/helm/latest/helm-linux-amd64 -o /usr/bin/helm && chmod +x /usr/bin/helm && \
