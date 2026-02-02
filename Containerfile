@@ -144,6 +144,8 @@ RUN --mount=type=cache,dst=/var/cache \
         wireguard-tools \
         wl-clipboard \
         x265 \
+        xdg-user-dirs \
+        xdg-terminal-exec \
         xrandr \
         zsh \
         zstd && \
