@@ -216,6 +216,10 @@ RUN --mount=type=cache,dst=/var/cache \
         steam && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/protontricks.desktop && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/yad-icon-browser.desktop && \
+    mkdir -p /tmp/nvapi-build && \
+    curl -sL $(curl -s https://api.github.com/repos/jp7677/dxvk-nvapi/releases/latest | grep "browser_download_url.*tar\.gz" | cut -d '"' -f 4) | tar -xz -C /tmp/nvapi-build && \
+    install -m0755 -D $(find /tmp/nvapi-build -name "libdxvk_nvapi_vkreflex_layer.so" | head -n 1) /usr/lib64/libdxvk_nvapi_vkreflex_layer.so && \
+    rm -rf /tmp/nvapi-build && \
     /ctx/cleanup \
     ; fi
 
