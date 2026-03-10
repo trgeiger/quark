@@ -201,8 +201,6 @@ RUN --mount=type=cache,dst=/var/cache \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
     if [[ "${IMAGE_NAME}" != *"quark-cloud-dev"* ]]; then \
     dnf5 -y install \
-        $(timeout 30 curl -s "https://api.github.com/repos/PancakeTAS/lsfg-vk/releases/latest" | grep "browser_download_url" | grep "lsfg-vk.*x86_64\.rpm" | cut -d '"' -f 4 || echo "") && \
-    dnf5 -y install \
         gamescope \
         gamescope-session-steam \
         dbus-x11 \
