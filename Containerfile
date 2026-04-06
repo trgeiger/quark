@@ -40,6 +40,17 @@ RUN --mount=type=cache,dst=/var/cache \
         https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm \
         # /tmp/rpms/config/*.rpm \
         fedora-repos-archive && \
+    if [[ "${FEDORA_MAJOR_VERSION}" == "44" ]]; then \
+        # dnf config-manager setopt rpmfusion-free-rawhide.enabled=0 && \
+        # dnf config-manager setopt rpmfusion-nonfree-rawhide.enabled=0 && \
+        dnf5 config-manager setopt rpmfusion-free.enabled=1 && \
+        dnf5 config-manager setopt rpmfusion-free-updates.enabled=1 && \
+        dnf5 config-manager setopt rpmfusion-free-updates-testing.enabled=1 && \
+        dnf5 config-manager setopt rpmfusion-nonfree.enabled=1 && \
+        dnf5 config-manager setopt rpmfusion-nonfree-updates.enabled=1 && \
+        dnf5 config-manager setopt rpmfusion-nonfree-updates-testing.enabled=1 && \
+        dnf5 repolist \
+    ; fi && \
     /ctx/cleanup
 
 # Install CachyOS kernel
