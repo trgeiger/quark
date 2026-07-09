@@ -63,6 +63,7 @@ RUN --mount=type=cache,dst=/var/cache \
     dnf5 -y install \
         "${KERNEL_NAME}" \
         "${KERNEL_NAME}"-core \
+        "${KERNEL_NAME}"-uname-r \
         "${KERNEL_NAME}"-devel \
         "${KERNEL_NAME}"-devel-matched && \
     /ctx/cleanup
@@ -93,6 +94,7 @@ RUN --mount=type=cache,dst=/var/cache \
         bootc \
         btrfsmaintenance \
         cascadia-code-fonts \
+        cachyos-settings \
         default-fonts-cjk-sans \
         distrobox \
         drm_info \
@@ -135,6 +137,7 @@ RUN --mount=type=cache,dst=/var/cache \
         powertop \
         python3-pip \
         rsms-inter-fonts \
+        scx-manager \
         scx-scheds \
         setools \
         smartmontools \
@@ -170,11 +173,6 @@ RUN --mount=type=cache,dst=/var/cache \
     if [[ "${BASE_IMAGE_NAME}" == "silverblue" ]]; then \
     dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:ublue-os:staging \
         gnome-shell && \
-    # dnf5 -y upgrade --repo tayler \
-        #gnome-control-center \
-        #gnome-control-center-filesystem \
-        # mutter \
-        # mutter-common && \
     dnf5 -y install \
         gnome-tweaks \
         gnome-shell-extension-blur-my-shell \
@@ -187,8 +185,6 @@ RUN --mount=type=cache,dst=/var/cache \
         gnome-classic-session \
         gnome-shell-extension-background-logo \
         gnome-shell-extension-apps-menu && \
-    # dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
-        # switcheroo-control && \
     sed -i '/^PRETTY_NAME/s/Silverblue/Quark/' /usr/lib/os-release && \
     sed -i 's/^NAME=.*/NAME="Quark"/' /usr/lib/os-release && \
     /ctx/cleanup \
@@ -200,8 +196,6 @@ RUN --mount=type=cache,dst=/var/cache \
     dnf5 -y remove \
         plasma-welcome \
         plasma-welcome-fedora && \
-    # dnf5 -y upgrade --repo tayler \
-        # kwin && \
     sed -i '/^PRETTY_NAME/s/Kinoite/Quark Plasma/' /usr/lib/os-release && \
     sed -i 's/^NAME=.*/NAME="Quark Plasma"/' /usr/lib/os-release \
     ; fi
