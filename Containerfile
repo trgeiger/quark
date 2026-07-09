@@ -63,7 +63,6 @@ RUN --mount=type=cache,dst=/var/cache \
     dnf5 -y install \
         "${KERNEL_NAME}" \
         "${KERNEL_NAME}"-core \
-        "${KERNEL_NAME}"-uname-r \
         "${KERNEL_NAME}"-devel \
         "${KERNEL_NAME}"-devel-matched && \
     /ctx/cleanup
@@ -86,6 +85,8 @@ RUN --mount=type=cache,dst=/var/cache \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
     dnf5 -y swap \
         ffmpeg-free ffmpeg --allowerasing && \
+    dnf5 -y swap \
+        zram-generator-defaults cachyos-settings && \
     dnf5 -y install \
         adw-gtk3-theme \
         alsa-firmware \
@@ -94,7 +95,6 @@ RUN --mount=type=cache,dst=/var/cache \
         bootc \
         btrfsmaintenance \
         cascadia-code-fonts \
-        cachyos-settings \
         default-fonts-cjk-sans \
         distrobox \
         drm_info \
