@@ -14,8 +14,13 @@ on:
       - testing
     paths-ignore:
       - '**.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
 env:
-    IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
 
 jobs:
   push-ghcr:
@@ -29,7 +34,6 @@ jobs:
       fail-fast: false
       matrix:
         image_flavor: [silverblue, kinoite]
-        # image_flavor: [silverblue]
         base_name: [quark, quark-cloud-dev]
         fedora_version: [44]
         include:
@@ -50,16 +54,20 @@ jobs:
             echo "IMAGE_NAME=${{ matrix.base_name }}" >> $GITHUB_ENV
           fi
 
+      - name: Lowercase Registry
+        id: registry_case
+        run: |
+          owner="${{ github.repository_owner }}"
+          echo "lowercase=ghcr.io/${owner,,}" >> $GITHUB_OUTPUT
+
       - name: Generate tags
         id: generate-tags
         shell: bash
         run: |
-          # Generate a timestamp for creating an image version history
           TIMESTAMP="$(date +%Y%m%d)"
           FEDORA_VERSION="${{ matrix.fedora_version }}"
           COMMIT_TAGS=()
           BUILD_TAGS=()
-          # Have tags for tracking builds during pull request
           SHA_SHORT="${GITHUB_SHA::7}"
           COMMIT_TAGS+=("pr-${{ github.event.pull_request.number }}-${FEDORA_VERSION}")
           COMMIT_TAGS+=("${SHA_SHORT}-${FEDORA_VERSION}")
@@ -67,7 +75,6 @@ jobs:
               COMMIT_TAGS+=("pr-${{ github.event.pull_request.number }}")
               COMMIT_TAGS+=("${SHA_SHORT}")
           fi
-
           if [[ ${{ github.ref_name }} == "testing" ]]; then
              BUILD_TAGS=("${FEDORA_VERSION}-testing" "${FEDORA_VERSION}-testing-${TIMESTAMP}")
              if [[ "${{ matrix.is_latest_version }}" == "true" ]]; then
@@ -84,7 +91,6 @@ jobs:
                  echo "DEFAULT_TAG=${FEDORA_VERSION}" >> $GITHUB_ENV
              fi
           fi
-
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
               echo "Generated the following commit tags: "
               for TAG in "${COMMIT_TAGS[@]}"; do
@@ -106,18 +112,6 @@ jobs:
           ver=$(skopeo inspect docker://ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ matrix.fedora_version }} | jq -r '.Labels["org.opencontainers.image.version"]')
           echo "VERSION=$ver" >> $GITHUB_OUTPUT
 
-      # Build metadata
-      - name: Image Metadata
-        uses: docker/metadata-action@v4
-        id: meta
-        with:
-          images: |
-            ${{ env.IMAGE_NAME }}
-          labels: |
-            org.opencontainers.image.title=${{ env.IMAGE_NAME }}
-            org.opencontainers.image.version=${{ steps.labels.outputs.VERSION }}
-            org.opencontainers.image.description=Personal Silverblue image
-
       - name: Maximize build space
         uses: AdityaGarg8/remove-unwanted-software@v4.1
         with:
@@ -138,7 +132,14 @@ jobs:
           command: |
             podman pull quay.io/fedora/fedora-${{ matrix.image_flavor }}:${{ matrix.fedora_version }}
 
-      # Build image using Buildah action
+      - name: Restore DNF package cache
+        uses: actions/cache/restore@v4
+        with:
+          path: /var/tmp/buildah-cache-*
+          key: ${{ runner.os }}-${{ runner.arch }}-buildah-quark-${{ matrix.fedora_version }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-buildah-quark-${{ matrix.fedora_version }}-
+
       - name: Build Image
         id: build_image
         uses: redhat-actions/buildah-build@v2.13
@@ -153,10 +154,25 @@ jobs:
             IMAGE_VENDOR=${{ github.repository_owner }}
             FEDORA_MAJOR_VERSION=${{ matrix.fedora_version }}
             BASE_IMAGE_NAME=${{ matrix.image_flavor }}
-          labels: ${{ steps.meta.outputs.labels }}
+          labels: |
+            org.opencontainers.image.title=${{ env.IMAGE_NAME }}
+            org.opencontainers.image.version=${{ steps.labels.outputs.VERSION }}
+            org.opencontainers.image.description=Personal Silverblue image
           oci: false
           extra-args: |
             --target=${{ matrix.base_name }}
+
+      - name: Hack around permission issue caching
+        if: always()
+        run: |
+          sudo chmod 777 --recursive /var/tmp/buildah-cache-* || true
+
+      - name: Save DNF package cache
+        if: github.event_name != 'pull_request'
+        uses: actions/cache/save@v4
+        with:
+          path: /var/tmp/buildah-cache-*
+          key: ${{ runner.os }}-${{ runner.arch }}-buildah-quark-${{ matrix.fedora_version }}-${{ github.run_id }}
 
       - name: Sign kernel
         uses: EyeCantCU/kernel-signer@v0.2.1
@@ -167,14 +183,6 @@ jobs:
           pubkey: /etc/pki/akmods/certs/quark-secure-boot.der
           tags: ${{ steps.build_image.outputs.tags }}
           kernel_suffix: cachyos
-
-      # Workaround bug where capital letters in your GitHub username make it impossible to push to GHCR.
-      # https://github.com/macbre/push-to-ghcr/issues/12
-      - name: Lowercase Registry
-        id: registry_case
-        uses: ASzc/change-string-case-action@v5
-        with:
-          string: ${{ env.IMAGE_REGISTRY }}
 
       # Push the image to GHCR (Image Registry)
       - name: Push To GHCR
@@ -220,7 +228,7 @@ jobs:
             cosign verify ${{ steps.registry_case.outputs.lowercase }}/${{ env.IMAGE_NAME }} \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
             --certificate-identity-regexp "${{ github.server_url }}/${{ github.repository }}"
-
+            
       - name: Echo outputs
         if: github.event_name != 'pull_request'
         run: |

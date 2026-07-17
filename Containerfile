@@ -20,21 +20,25 @@ ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-43}"
 COPY system_files /
 
 # Update packages
-RUN dnf5 -y upgrade
-
-# Setup repos and ublue-os config rpms
 RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
+    dnf5 -y upgrade
+
+# Setup repos
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
     curl -Lo /usr/bin/cpm https://github.com/trgeiger/cpm/releases/download/v1.0.3/cpm && chmod +x /usr/bin/cpm && \
     cpm enable \
         kylegospo/bazzite \
         ublue-os/staging \
         bieszczaders/kernel-cachyos \
         bieszczaders/kernel-cachyos-addons && \
-    # if [[ "${FEDORA_MAJOR_VERSION}" == "43" ]]; then \
-    #     dnf5 -y config-manager setopt "*fedora*".exclude="gdk-pixbuf2-*" \
-    # ; fi && \
     dnf5 -y install \
         https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
         https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm \
@@ -55,22 +59,19 @@ RUN --mount=type=cache,dst=/var/cache \
 
 # Install CachyOS kernel
 RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
-    dnf5 -y remove --no-autoremove kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra kernel-tools kernel-tools-libs kernel-uki-virt && \
-    dnf5 -y install \
-        "${KERNEL_NAME}"-modules && \
-    dnf5 -y install \
-        "${KERNEL_NAME}" \
-        "${KERNEL_NAME}"-core \
-        "${KERNEL_NAME}"-devel \
-        "${KERNEL_NAME}"-devel-matched && \
+    --mount=type=tmpfs,dst=/tmp \
+    /ctx/install-kernel.sh "${KERNEL_NAME}" && \
     /ctx/cleanup
 
 # Removals
 RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
     dnf5 -y remove \
         google-noto-sans-cjk-vf-fonts \
         mesa-va-drivers \
@@ -81,8 +82,10 @@ RUN --mount=type=cache,dst=/var/cache \
 
 # Additions and swaps
 RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
     dnf5 -y swap \
         ffmpeg-free ffmpeg --allowerasing && \
     dnf5 -y swap \
@@ -168,8 +171,10 @@ RUN --mount=type=cache,dst=/var/cache \
 
 # Desktop environment stuff
 RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
     if [[ "${BASE_IMAGE_NAME}" == "silverblue" ]]; then \
     dnf5 -y upgrade --repo copr:copr.fedorainfracloud.org:ublue-os:staging \
         gnome-shell && \
@@ -202,8 +207,10 @@ RUN --mount=type=cache,dst=/var/cache \
 
 # Gaming-specific changes
 RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
     if [[ "${IMAGE_NAME}" != *"quark-cloud-dev"* ]]; then \
     dnf5 -y install \
         gamescope \
@@ -224,8 +231,10 @@ RUN --mount=type=cache,dst=/var/cache \
 
 # run post-install tasks and clean up
 RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
     mkdir -p /var/tmp && chmod 1777 /var/tmp && \
     cpm disable \
         kylegospo/bazzite \
@@ -271,8 +280,10 @@ ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION}"
 
 # Install Openshift tools -- oc, opm, kubectl, operator-sdk, odo, helm, crc
 RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
     export VER=$(curl --silent -qI https://github.com/operator-framework/operator-sdk/releases/latest | \
     awk -F '/' '/^location/ {print  substr($NF, 1, length($NF)-1)}') && \
     curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" -o /usr/bin/kubectl && \
@@ -288,8 +299,10 @@ RUN --mount=type=cache,dst=/var/cache \
 
 # Install Kind
 RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
     curl -Lo ./kind "https://github.com/kubernetes-sigs/kind/releases/latest/download/kind-$(uname)-amd64" && \
     chmod +x ./kind && \
     mv ./kind /usr/bin/kind && \
@@ -297,16 +310,20 @@ RUN --mount=type=cache,dst=/var/cache \
 
 # Install awscli
 RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
     curl -SL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip && \
     unzip awscliv2.zip && \
     ./aws/install --bin-dir /usr/bin --install-dir /usr/bin && \
     /ctx/cleanup
 
 RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
     echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo && rpm --import https://packages.microsoft.com/keys/microsoft.asc && \
     dnf5 -y install \
         code \
@@ -317,7 +334,12 @@ RUN --mount=type=cache,dst=/var/cache \
         rm -f /var/lib/unbound/root.key && \
     /ctx/cleanup
 
-RUN echo -e "[google-cloud-cli]\nname=Google Cloud CLI\nbaseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el9-x86_64\nenabled=1\ngpgcheck=1\nrepo_gpgcheck=0\ngpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg" > /etc/yum.repos.d/google-cloud-sdk.repo && \
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
+    echo -e "[google-cloud-cli]\nname=Google Cloud CLI\nbaseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el9-x86_64\nenabled=1\ngpgcheck=1\nrepo_gpgcheck=0\ngpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg" > /etc/yum.repos.d/google-cloud-sdk.repo && \
     dnf5 -y install \
         libxcrypt-compat.x86_64 \
         google-cloud-cli \
@@ -325,8 +347,10 @@ RUN echo -e "[google-cloud-cli]\nname=Google Cloud CLI\nbaseurl=https://packages
     
 
 RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
     cpm remove --all && \
     rm -f get_helm.sh && \
     rm -rf aws && \

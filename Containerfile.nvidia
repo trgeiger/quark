@@ -30,8 +30,10 @@ RUN install -Dm644 tmp/private_key.priv /etc/pki/akmods/private/private_key.priv
     install -Dm644 /etc/pki/akmods/certs/quark-secure-boot.der /etc/pki/akmods/certs/public_key.der
 
 RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
     --mount=type=bind,from=nvidia-akmods,src=/rpms,dst=/tmp/akmods-rpms \
     /tmp/install-nvidia.sh "${IMAGE_NAME}" "${NVIDIA_VERSION}" "${USE_PERSONAL_REPO}" && \
     KERNEL_VERSION="$(rpm -q ${KERNEL_NAME} --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" && \
@@ -40,8 +42,10 @@ RUN --mount=type=cache,dst=/var/cache \
     echo 'force_drivers+=" nvidia nvidia-drm nvidia-modeset nvidia-peermem nvidia-uvm "' > /usr/lib/dracut/dracut.conf.d/95-nvidia.conf
 
 RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
     rm -f /etc/pki/akmods/private/private_key.priv && \
     rm -f /etc/pki/akmods/certs/public_key.der && \
     /ctx/build-initramfs && \
