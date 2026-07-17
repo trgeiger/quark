@@ -136,9 +136,9 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: /var/tmp/buildah-cache-*
-          key: ${{ runner.os }}-${{ runner.arch }}-buildah-quark-${{ matrix.fedora_version }}-${{ github.run_id }}
+          key: ${{ runner.os }}-${{ runner.arch }}-buildah-quark-${{ matrix.base_name }}-${{ matrix.image_flavor }}-${{ matrix.fedora_version }}-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-buildah-quark-${{ matrix.fedora_version }}-
+            ${{ runner.os }}-${{ runner.arch }}-buildah-quark-${{ matrix.base_name }}-${{ matrix.image_flavor }}-${{ matrix.fedora_version }}-
 
       - name: Build Image
         id: build_image
@@ -172,7 +172,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: /var/tmp/buildah-cache-*
-          key: ${{ runner.os }}-${{ runner.arch }}-buildah-quark-${{ matrix.fedora_version }}-${{ github.run_id }}
+          key: ${{ runner.os }}-${{ runner.arch }}-buildah-quark-${{ matrix.base_name }}-${{ matrix.image_flavor }}-${{ matrix.fedora_version }}-${{ github.run_id }}
 
       - name: Sign kernel
         uses: EyeCantCU/kernel-signer@v0.2.1
