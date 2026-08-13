@@ -26,14 +26,11 @@ else
 fi
 
 ls -alR /tmp/akmods-rpms
-dnf5 -y copr enable @ai-ml/nvidia-container-toolkit
 dnf5 -y install --enable-repo="$ENABLED_REPO" \
     xorg-x11-drv-nvidia \
     xorg-x11-drv-nvidia-cuda \
     xorg-x11-drv-nvidia-cuda-libs \
     xorg-x11-drv-nvidia-power \
-    nvidia-container-toolkit \
-    nvidia-container-toolkit-selinux \
     libva-utils \
     vdpauinfo \
     libva-nvidia-driver \

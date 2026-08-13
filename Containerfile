@@ -87,6 +87,8 @@ RUN --mount=type=cache,dst=/var/cache \
         ffmpeg-free ffmpeg --allowerasing && \
     dnf5 -y swap \
         zram-generator-defaults cachyos-settings && \
+    dnf5 -y swap \
+        tuned-ppd power-profiles-daemon && \
     dnf5 -y install \
         adw-gtk3-theme \
         alsa-firmware \
@@ -147,11 +149,6 @@ RUN --mount=type=cache,dst=/var/cache \
         tcpdump \
         tmux \
         traceroute \
-        tuned \
-        tuned-gtk \
-        tuned-ppd \
-        tuned-profiles-cpu-partitioning \
-        tuned-utils \
         unrar \
         vim \
         vulkan-tools \
@@ -204,7 +201,6 @@ RUN --mount=type=cache,dst=/var/cache \
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/log \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
-    if [[ "${IMAGE_NAME}" != *"quark-cloud-dev"* ]]; then \
     dnf5 -y install \
         gamescope \
         gamescope-session-steam \
@@ -220,7 +216,6 @@ RUN --mount=type=cache,dst=/var/cache \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/protontricks.desktop && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/yad-icon-browser.desktop && \
     /ctx/cleanup \
-    ; fi
 
 # run post-install tasks and clean up
 RUN --mount=type=cache,dst=/var/cache \
@@ -241,13 +236,11 @@ RUN --mount=type=cache,dst=/var/cache \
     mkdir -p /usr/etc/flatpak/remotes.d && \
     curl -Lo /usr/etc/flatpak/remotes.d/flathub.flatpakrepo https://dl.flathub.org/repo/flathub.flatpakrepo && \
     sed -i 's|^ExecStart=.*|ExecStart=/usr/libexec/rtkit-daemon --no-canary|' /usr/lib/systemd/system/rtkit-daemon.service && \
-    sed -i 's@Name=tuned-gui@Name=TuneD Manager@g' /usr/share/applications/tuned-gui.desktop && \
     curl -Lo /tmp/starship.tar.gz "https://github.com/starship/starship/releases/latest/download/starship-x86_64-unknown-linux-musl.tar.gz" && \
     tar -xf /tmp/starship.tar.gz -C /tmp && \
     install -c -m 0755 /tmp/starship /usr/bin && \
     echo 'eval "$(starship init bash)"' >> /etc/bashrc && \
     echo 'eval "$(starship init zsh)"' >> /etc/zshrc && \
-    systemctl enable tuned.service && \
     systemctl enable dconf-update.service && \
     systemctl disable rpm-ostreed-automatic.timer && \
     systemctl --global enable podman.socket && \
@@ -258,81 +251,3 @@ RUN --mount=type=cache,dst=/var/cache \
     /ctx/build-initramfs && \
     /ctx/cleanup && \
     /ctx/finalize 
-
-
-# cloud development build
-FROM quark as quark-cloud-dev
-
-ARG IMAGE_NAME="${IMAGE_NAME:-quark-cloud-dev}"
-ARG IMAGE_VENDOR="${IMAGE_VENDOR}"
-ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
-ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME}"
-ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION}"
-
-# Install Openshift tools -- oc, opm, kubectl, operator-sdk, odo, helm, crc
-RUN --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/log \
-    --mount=type=bind,from=ctx,source=/,target=/ctx \
-    export VER=$(curl --silent -qI https://github.com/operator-framework/operator-sdk/releases/latest | \
-    awk -F '/' '/^location/ {print  substr($NF, 1, length($NF)-1)}') && \
-    curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" -o /usr/bin/kubectl && \
-    chmod +x /usr/bin/kubectl && \
-    curl -Lo /usr/bin/operator-sdk https://github.com/operator-framework/operator-sdk/releases/download/$VER/operator-sdk_linux_amd64 && \
-    chmod +x /usr/bin/operator-sdk && \
-    curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/opm-linux.tar.gz | tar xvzf - -C /usr/bin && \
-    curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/helm/latest/helm-linux-amd64 -o /usr/bin/helm && chmod +x /usr/bin/helm && \
-    curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/odo/latest/odo-linux-amd64 -o /usr/bin/odo && chmod +x /usr/bin/odo && \
-    curl -SL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/crc/latest/crc-linux-amd64.tar.xz | tar xfJ - --strip-components 1 -C /usr/bin --wildcards '*/crc' && \
-    /ctx/cleanup
-
-
-# Install Kind
-RUN --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/log \
-    --mount=type=bind,from=ctx,source=/,target=/ctx \
-    curl -Lo ./kind "https://github.com/kubernetes-sigs/kind/releases/latest/download/kind-$(uname)-amd64" && \
-    chmod +x ./kind && \
-    mv ./kind /usr/bin/kind && \
-    /ctx/cleanup
-
-# Install awscli
-RUN --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/log \
-    --mount=type=bind,from=ctx,source=/,target=/ctx \
-    curl -SL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip && \
-    unzip awscliv2.zip && \
-    ./aws/install --bin-dir /usr/bin --install-dir /usr/bin && \
-    /ctx/cleanup
-
-RUN --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/log \
-    --mount=type=bind,from=ctx,source=/,target=/ctx \
-    echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo && rpm --import https://packages.microsoft.com/keys/microsoft.asc && \
-    dnf5 -y install \
-        code \
-        make \
-        qemu \
-        libvirt \
-        virt-manager && \
-        rm -f /var/lib/unbound/root.key && \
-    /ctx/cleanup
-
-RUN echo -e "[google-cloud-cli]\nname=Google Cloud CLI\nbaseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el9-x86_64\nenabled=1\ngpgcheck=1\nrepo_gpgcheck=0\ngpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg" > /etc/yum.repos.d/google-cloud-sdk.repo && \
-    dnf5 -y install \
-        libxcrypt-compat.x86_64 \
-        google-cloud-cli \
-        nodejs-npm
-    
-
-RUN --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/log \
-    --mount=type=bind,from=ctx,source=/,target=/ctx \
-    cpm remove --all && \
-    rm -f get_helm.sh && \
-    rm -rf aws && \
-    rm -f awscliv2.zip && \
-    rm -f /usr/bin/README.md && \
-    rm -f /usr/bin/LICENSE && \
-    sed -i '/^PRETTY_NAME/s/Quark/Quark Cloud Dev/' /usr/lib/os-release && \
-    sed -i '/^NAME/s/Quark/Quark Cloud Dev/' /usr/lib/os-release && \
-    /ctx/cleanup
