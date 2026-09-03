@@ -87,8 +87,6 @@ RUN --mount=type=cache,dst=/var/cache \
         ffmpeg-free ffmpeg --allowerasing && \
     dnf5 -y swap \
         zram-generator-defaults cachyos-settings && \
-    dnf5 -y swap \
-        tuned-ppd power-profiles-daemon && \
     dnf5 -y install \
         adw-gtk3-theme \
         alsa-firmware \
@@ -150,6 +148,11 @@ RUN --mount=type=cache,dst=/var/cache \
         tmux \
         traceroute \
         unrar \
+        tuned \
+        tuned-gtk \
+        tuned-ppd \
+        tuned-profiles-cpu-partitioning \
+        tuned-utils \
         vim \
         vulkan-tools \
         wireguard-tools \
